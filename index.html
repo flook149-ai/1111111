@@ -40,7 +40,7 @@
   button{font-family:'Sarabun',sans-serif;cursor:pointer;}
   ::selection{background:var(--accent-soft);}
 
-.hero{
+  .hero{
     padding:38px 24px 28px 24px;
     text-align:center;
     position:relative;
@@ -68,7 +68,7 @@
   .hero h1{font-size:28px;font-weight:700;color:var(--primary-dark);margin:0 0 6px 0;letter-spacing:0.5px;}
   .hero p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.6;}
 
-.section{padding:6px 20px 0 20px;}
+  .section{padding:6px 20px 0 20px;}
   .eyebrow{
     font-family:'Prompt',sans-serif;
     font-size:12.5px;font-weight:600;letter-spacing:1.6px;
@@ -76,7 +76,7 @@
     margin:22px 4px 12px 4px;
   }
 
-.card-list{display:flex;flex-direction:column;gap:10px;}
+  .card-list{display:flex;flex-direction:column;gap:10px;}
   .item-card{
     background:var(--surface);
     border:1px solid var(--border);
@@ -99,7 +99,7 @@
   .item-desc{font-size:12.8px;color:var(--muted);margin:0;line-height:1.4;}
   .item-chevron{color:var(--accent);font-size:18px;flex-shrink:0;}
 
-.view{padding:18px 20px 8px 20px;}
+  .view{padding:18px 20px 8px 20px;}
   .back-btn{
     display:inline-flex;align-items:center;gap:6px;
     background:none;border:none;color:var(--primary);
@@ -108,7 +108,7 @@
   .view-title{font-size:21px;font-weight:700;color:var(--primary-dark);margin:2px 0 4px 0;}
   .view-sub{font-size:13px;color:var(--muted);margin:0 0 20px 0;line-height:1.5;}
 
-.panel{
+  .panel{
     background:var(--surface);
     border:1px solid var(--border);
     border-radius:var(--radius-lg);
@@ -137,7 +137,7 @@
   .muted-note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;}
   .error-note{font-size:12.5px;color:var(--danger);margin-top:10px;line-height:1.5;}
 
-.player-pill{
+  .player-pill{
     display:inline-flex;align-items:center;gap:6px;
     background:var(--accent-soft);color:var(--primary-dark);
     border-radius:999px;padding:6px 12px;font-size:13px;font-weight:500;margin:3px 4px 3px 0;
@@ -147,7 +147,7 @@
     color:var(--primary-dark);text-align:center;margin:6px 0 14px 0;
   }
 
-.board-grid{
+  .board-grid{
     display:grid;
     grid-template-columns:repeat(6,1fr);
     gap:8px;
@@ -167,14 +167,14 @@
   .board-card:active{transform:scale(0.94);}
   .board-card:disabled{opacity:0.55;cursor:not-allowed;}
 
-.score-strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .score-strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
   .score-chip{
     background:var(--surface-soft);border:1px solid var(--border);border-radius:999px;
     padding:5px 12px;font-size:12.5px;color:var(--text);
   }
   .score-chip.me{border-color:var(--primary);color:var(--primary-dark);font-weight:600;}
 
-.chat-window{
+  .chat-window{
     height:260px;overflow-y:auto;background:var(--surface-soft);
     border-radius:var(--radius-md);padding:14px;margin-bottom:12px;
     display:flex;flex-direction:column;gap:8px;
@@ -186,7 +186,7 @@
   .msg-name{font-size:11px;font-weight:600;opacity:0.82;margin-bottom:4px;}
   .msg-text{white-space:pre-wrap;}
 
-textarea.input{
+  textarea.input{
     resize:none;
     min-height:44px;
     max-height:180px;
@@ -194,7 +194,7 @@ textarea.input{
     line-height:1.6;
   }
 
-.spinner-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);margin:0 2px;animation:blink 1.3s infinite;}
+  .spinner-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);margin:0 2px;animation:blink 1.3s infinite;}
   .spinner-dot:nth-child(2){animation-delay:.2s;}
   .spinner-dot:nth-child(3){animation-delay:.4s;}
   @keyframes blink{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
@@ -305,7 +305,7 @@ function renderHome(){
     <p>พื้นที่เล็ก ๆ ที่ตั้งใจดูแลใจของคุณ<br/>เกมจับคู่, ห้องแชท, และการเล่นเป็นรอบ</p>
   </div>
 
-<div class="section">
+  <div class="section">
     <div class="eyebrow">เริ่มต้น</div>
     <div class="card-list">
       <button class="item-card" data-action="nav" data-view="boardgame">
@@ -328,28 +328,28 @@ async function renderBoardGameEntry(){
     <h2 class="view-title">🎲 บอร์ดเกม</h2>
     <p class="view-sub">สร้างหรือเข้าห้องเพื่อเล่นเกมจับคู่ 48 ใบ พร้อมแชทในห้องเดียวกัน</p>
 
-<div class="panel">
+    <div class="panel">
       <label style="font-size:13px;color:var(--muted);">ชื่อที่ใช้แสดง</label>
       <input class="input" id="nickname-input" placeholder="เช่น ฟ้าใส" value="${escapeHtml(ME_NAME||'')}" style="margin-top:6px;margin-bottom:14px;"/>
 
-<button class="btn btn-primary" data-action="board-quickmatch">🔀 สุ่มจับคู่ห้องที่ว่าง</button>
+      <button class="btn btn-primary" data-action="board-quickmatch">🔀 สุ่มจับคู่ห้องที่ว่าง</button>
 
-<div style="text-align:center;color:var(--muted);font-size:12px;margin:16px 0 12px 0;">— หรือ —</div>
+      <div style="text-align:center;color:var(--muted);font-size:12px;margin:16px 0 12px 0;">— หรือ —</div>
 
-<label style="font-size:13px;color:var(--muted);">ตั้งชื่อห้อง</label>
+      <label style="font-size:13px;color:var(--muted);">ตั้งชื่อห้อง</label>
       <input class="input" id="bg-roomname-input" placeholder="เช่น ห้องเพื่อนซี้" style="margin-top:6px;margin-bottom:10px;"/>
 
-<label style="font-size:13px;color:var(--muted);">ตั้งรหัสห้องเอง</label>
+      <label style="font-size:13px;color:var(--muted);">ตั้งรหัสห้องเอง</label>
       <input class="input" id="bg-customcode-input" placeholder="เช่น FUN1" maxlength="8" style="text-transform:uppercase;margin-top:6px;margin-bottom:12px;"/>
 
-<button class="btn btn-outline" data-action="board-createroom">➕ สร้างห้องใหม่</button>
+      <button class="btn btn-outline" data-action="board-createroom">➕ สร้างห้องใหม่</button>
 
-<div class="row" style="margin-top:14px;">
+      <div class="row" style="margin-top:14px;">
         <input class="input" id="bg-code-input" placeholder="กรอกรหัสห้อง" style="text-transform:uppercase;"/>
         <button class="btn btn-outline" data-action="board-joincode" style="flex:0 0 100px;">เข้าร่วม</button>
       </div>
 
-<p class="muted-note">ห้องหนึ่งเล่นได้สูงสุด 4 คน เมื่อเริ่มเกมระบบจะล็อกเทิร์นทีละคน และในห้องมีแชทให้คุยกันได้</p>
+      <p class="muted-note">ห้องหนึ่งเล่นได้สูงสุด 4 คน เมื่อเริ่มเกมระบบจะล็อกเทิร์นทีละคน และในห้องมีแชทให้คุยกันได้</p>
       ${lastError ? `<p class="error-note">${escapeHtml(lastError)}</p>` : ''}
     </div>
   </div>`;
@@ -369,10 +369,10 @@ async function boardQuickMatch(){
   ME_NAME = nick;
   lSet('nickname', nick);
 
-const allRooms = await fGet('rooms') || {};
+  const allRooms = await fGet('rooms') || {};
   let joined = null;
 
-for(const code in allRooms){
+  for(const code in allRooms){
     const room = allRooms[code];
     const players = room && room.players ? room.players : {};
     if(room && room.status === 'waiting' && Object.keys(players).length < 4 && !players[ME_ID]){
@@ -381,7 +381,7 @@ for(const code in allRooms){
     }
   }
 
-if(!joined){
+  if(!joined){
     joined = roomCode();
     const cards = makeDeck();
     let ok = await fSet('rooms/'+joined+'/players/'+ME_ID, { name:nick, score:0 });
@@ -400,7 +400,7 @@ if(!joined){
     }
   }
 
-currentRoomCode = joined;
+  currentRoomCode = joined;
   goto('boardroom');
 }
 
@@ -409,10 +409,10 @@ async function boardCreateRoom(){
   const roomNameInput = document.getElementById('bg-roomname-input').value.trim();
   let code = document.getElementById('bg-customcode-input').value.trim().toUpperCase();
 
-ME_NAME = nick;
+  ME_NAME = nick;
   lSet('nickname', nick);
 
-if(code){
+  if(code){
     if(!/^[A-Z0-9]{2,8}$/.test(code)){
       lastError='รหัสห้องควรเป็น A-Z / 0-9 ยาว 2-8 ตัว';
       render();
@@ -428,10 +428,10 @@ if(code){
     code = roomCode();
   }
 
-const cards = makeDeck();
+  const cards = makeDeck();
   const roomName = roomNameInput || ('ห้องของ '+nick);
 
-let ok = await fSet('rooms/'+code+'/players/'+ME_ID, { name:nick, score:0 });
+  let ok = await fSet('rooms/'+code+'/players/'+ME_ID, { name:nick, score:0 });
   ok = ok && await fSet('rooms/'+code+'/code', code);
   ok = ok && await fSet('rooms/'+code+'/roomName', roomName);
   ok = ok && await fSet('rooms/'+code+'/createdAt', Date.now());
@@ -441,13 +441,13 @@ let ok = await fSet('rooms/'+code+'/players/'+ME_ID, { name:nick, score:0 });
   ok = ok && await fDel('rooms/'+code+'/pairLockBy');
   ok = ok && await fDel('rooms/'+code+'/lockedBy');
 
-if(!ok){
+  if(!ok){
     lastError='สร้างห้องไม่สำเร็จ ลองใหม่อีกครั้ง';
     render();
     return;
   }
 
-currentRoomCode = code;
+  currentRoomCode = code;
   goto('boardroom');
 }
 
@@ -456,32 +456,32 @@ async function boardJoinCode(){
   const code = document.getElementById('bg-code-input').value.trim().toUpperCase();
   if(!code) return;
 
-ME_NAME = nick;
+  ME_NAME = nick;
   lSet('nickname', nick);
 
-const room = await fGet('rooms/'+code);
+  const room = await fGet('rooms/'+code);
   if(!room){
     lastError='ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง';
     render();
     return;
   }
 
-const players = room.players || {};
+  const players = room.players || {};
   const playerCount = Object.keys(players).length;
 
-if(room.status !== 'waiting'){
+  if(room.status !== 'waiting'){
     lastError='ห้องนี้กำลังเล่นอยู่แล้ว';
     render();
     return;
   }
 
-if(!players[ME_ID] && playerCount >= 4){
+  if(!players[ME_ID] && playerCount >= 4){
     lastError='ห้องนี้เต็มแล้ว';
     render();
     return;
   }
 
-if(!players[ME_ID]){
+  if(!players[ME_ID]){
     const ok = await fSet('rooms/'+code+'/players/'+ME_ID, { name:nick, score:0 });
     if(!ok){
       lastError='เข้าห้องไม่สำเร็จ ลองใหม่อีกครั้ง';
@@ -490,7 +490,7 @@ if(!players[ME_ID]){
     }
   }
 
-currentRoomCode = code;
+  currentRoomCode = code;
   goto('boardroom');
 }
 
@@ -517,7 +517,7 @@ function renderBoardGrid(room){
   const myTurn = room.status === 'playing' && room.turnId === ME_ID;
   const allMatched = cards.length > 0 && cards.every(c => c.matchedBy);
 
-return cards.map((c,i)=>{
+  return cards.map((c,i)=>{
     const isFlipped = !!flipped[i];
     const open = c.matchedBy || isFlipped;
     const cls = c.matchedBy ? 'matched' : (isFlipped ? 'open' : '');
@@ -532,7 +532,7 @@ function renderRoomMessages(room){
     return `<div class="msg sys">ยังไม่มีข้อความ เริ่มคุยกันได้เลย 🙂</div>`;
   }
 
-return messages.map(m=>{
+  return messages.map(m=>{
     if(m.sender === 'sys') return `<div class="msg sys">${escapeHtml(m.text)}</div>`;
     const isMe = m.sender === ME_ID;
     const name = escapeHtml(m.name || (isMe ? 'คุณ' : 'เพื่อน'));
@@ -550,10 +550,10 @@ function renderEndPanel(room){
   const allMatched = cards.length > 0 && cards.every(c => c.matchedBy);
   if(!allMatched) return '';
 
-const { topScore, topPlayers } = topScoreInfo(room.players || {});
+  const { topScore, topPlayers } = topScoreInfo(room.players || {});
   const topText = topPlayers.map(p => p.name).join(', ');
 
-return `
+  return `
     <div class="panel" id="endgame-panel" style="text-align:center;">
       <p style="font-family:Prompt;font-weight:600;font-size:17px;color:var(--primary-dark);">🎉 จบเกมแล้ว!</p>
       <p class="view-sub" style="margin:6px 0 0 0;">ผู้ที่ได้คะแนนสูงสุด: ${escapeHtml(topText)} (${topScore}★)</p>
@@ -571,63 +571,63 @@ async function renderBoardRoom(){
     return `<div class="view"><button class="back-btn" data-action="nav" data-view="boardgame">← กลับ</button><p class="empty-note">ห้องนี้ถูกปิดไปแล้ว</p></div>`;
   }
 
-if(!pollTimer){
+  if(!pollTimer){
     pollTimer = setInterval(()=>{ if(view==='boardroom') refreshBoardRoom(); }, 1200);
   }
 
-const players = room.players || {};
+  const players = room.players || {};
   const playerIds = Object.keys(players);
   const cards = room.cards || [];
   const allMatched = cards.length > 0 && cards.every(c => c.matchedBy);
   const { sorted } = topScoreInfo(players);
 
-return `
+  return `
   <div class="view">
     <button class="back-btn" data-action="board-leave">← ออกจากห้อง</button>
     <h2 class="view-title">${escapeHtml(room.roomName || ('ห้อง '+room.code))}</h2>
 
-<div class="room-code">${escapeHtml(room.code || '')}</div>
+    <div class="room-code">${escapeHtml(room.code || '')}</div>
 
-<div class="score-strip" id="score-strip">
+    <div class="score-strip" id="score-strip">
       ${playerIds.map(id=>`<span class="score-chip ${id===ME_ID?'me':''}">${escapeHtml(players[id].name)}: ${players[id].score||0}★</span>`).join('')}
     </div>
 
-<div id="turn-note" class="muted-note" style="margin-top:-2px;">
+    <div id="turn-note" class="muted-note" style="margin-top:-2px;">
       ${room.status === 'playing'
         ? `ถึงตาของ: ${escapeHtml((players[room.turnId] && players[room.turnId].name) || '—')}`
         : `รอผู้เล่นอย่างน้อย 2 คน แล้วกดเริ่มเกม`}
     </div>
 
-<div class="panel" style="margin-top:12px;">
+    <div class="panel" style="margin-top:12px;">
       <div style="margin-bottom:8px;">
         ${playerIds.map(id=>`<span class="player-pill">🙂 ${escapeHtml(players[id].name)}${id===ME_ID?' (คุณ)':''}</span>`).join('')}
       </div>
 
-<div class="row" style="margin-top:10px;">
+      <div class="row" style="margin-top:10px;">
         <button class="btn btn-outline" data-action="board-leave">ออกจากห้อง</button>
         <button class="btn btn-primary" data-action="board-start" ${playerIds.length < 2 || room.status !== 'waiting' ? 'disabled' : ''}>เริ่มเกม</button>
       </div>
 
-${room.status === 'waiting' ? `<p class="muted-note" style="text-align:center;margin-bottom:0;">ตอนนี้ยังเป็นห้องรอผู้เล่น</p>` : ''}
+      ${room.status === 'waiting' ? `<p class="muted-note" style="text-align:center;margin-bottom:0;">ตอนนี้ยังเป็นห้องรอผู้เล่น</p>` : ''}
     </div>
 
-<div id="endgame-slot">
+    <div id="endgame-slot">
       ${renderEndPanel(room)}
     </div>
 
-<div class="board-grid" id="board-grid">
+    <div class="board-grid" id="board-grid">
       ${renderBoardGrid(room)}
     </div>
 
-<p class="muted-note">เปิดการ์ดได้ครั้งละ 1 คนต่อเทิร์น จับคู่ให้ถูกเพื่อได้แต้ม</p>
+    <p class="muted-note">เปิดการ์ดได้ครั้งละ 1 คนต่อเทิร์น จับคู่ให้ถูกเพื่อได้แต้ม</p>
 
-<div class="panel">
+    <div class="panel">
       <div class="eyebrow" style="margin-top:0;">ห้องแชท</div>
       <div class="chat-window" id="room-chat-window">
         ${renderRoomMessages(room)}
       </div>
 
-<div class="row">
+      <div class="row">
         <textarea class="input" id="room-chat-input" placeholder="พิมพ์ข้อความ…" rows="1" enterkeyhint="send" autocapitalize="none" autocomplete="off" spellcheck="true">${escapeHtml(roomChatDraft)}</textarea>
         <button class="btn btn-primary" style="flex:0 0 90px;" data-action="room-chat-send">ส่ง</button>
       </div>
@@ -639,7 +639,7 @@ ${room.status === 'waiting' ? `<p class="muted-note" style="text-align:center;ma
 async function refreshBoardRoom(){
   if(view !== 'boardroom') return;
 
-const room = await fGet('rooms/'+currentRoomCode);
+  const room = await fGet('rooms/'+currentRoomCode);
   if(!room){
     if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
     currentRoomCode = null;
@@ -647,10 +647,10 @@ const room = await fGet('rooms/'+currentRoomCode);
     return;
   }
 
-const players = room.players || {};
+  const players = room.players || {};
   const playerIds = Object.keys(players);
 
-// normalize if somebody left
+  // normalize if somebody left
   if(room.status === 'playing'){
     if(room.turnId && !players[room.turnId] && playerIds.length){
       await fSet('rooms/'+currentRoomCode+'/turnId', playerIds[0]);
@@ -662,29 +662,29 @@ const players = room.players || {};
     }
   }
 
-const scoreStrip = document.getElementById('score-strip');
+  const scoreStrip = document.getElementById('score-strip');
   if(scoreStrip){
     scoreStrip.innerHTML = playerIds.map(id=>`<span class="score-chip ${id===ME_ID?'me':''}">${escapeHtml(players[id].name)}: ${players[id].score||0}★</span>`).join('');
   }
 
-const turnNote = document.getElementById('turn-note');
+  const turnNote = document.getElementById('turn-note');
   if(turnNote){
     turnNote.innerHTML = room.status === 'playing'
       ? `ถึงตาของ: ${escapeHtml((players[room.turnId] && players[room.turnId].name) || '—')}`
       : `รอผู้เล่นอย่างน้อย 2 คน แล้วกดเริ่มเกม`;
   }
 
-const endSlot = document.getElementById('endgame-slot');
+  const endSlot = document.getElementById('endgame-slot');
   if(endSlot){
     endSlot.innerHTML = renderEndPanel(room);
   }
 
-const grid = document.getElementById('board-grid');
+  const grid = document.getElementById('board-grid');
   if(grid){
     grid.innerHTML = renderBoardGrid(room);
   }
 
-const chatWindow = document.getElementById('room-chat-window');
+  const chatWindow = document.getElementById('room-chat-window');
   if(chatWindow){
     const nearBottom = chatWindow.scrollTop + chatWindow.clientHeight >= chatWindow.scrollHeight - 100;
     chatWindow.innerHTML = renderRoomMessages(room);
@@ -696,7 +696,7 @@ async function boardStart(){
   const room = await fGet('rooms/'+currentRoomCode);
   if(!room) return;
 
-const players = room.players || {};
+  const players = room.players || {};
   const playerIds = Object.keys(players);
   if(playerIds.length < 2){
     lastError = 'ต้องมีผู้เล่นอย่างน้อย 2 คน';
@@ -704,7 +704,7 @@ const players = room.players || {};
     return;
   }
 
-await fSet('rooms/'+currentRoomCode+'/status', 'playing');
+  await fSet('rooms/'+currentRoomCode+'/status', 'playing');
   await fSet('rooms/'+currentRoomCode+'/turnId', playerIds[0]);
   await fSet('rooms/'+currentRoomCode+'/flipped', {});
   await fDel('rooms/'+currentRoomCode+'/pairLockBy');
@@ -716,39 +716,39 @@ async function boardFlip(idx){
   const room = await fGet('rooms/'+currentRoomCode);
   if(!room || room.status !== 'playing') return;
 
-const cards = room.cards || [];
+  const cards = room.cards || [];
   const flipped = room.flipped || {};
   const card = cards[idx];
   const turnId = room.turnId || null;
   const pairLockBy = room.pairLockBy || null;
 
-// ต้องถึงตาของคนนี้
+  // ต้องถึงตาของคนนี้
   if(turnId && turnId !== ME_ID) return;
 
-// ถ้าคู่กำลังถูกเปิดโดยคนอื่น ห้ามแทรก
+  // ถ้าคู่กำลังถูกเปิดโดยคนอื่น ห้ามแทรก
   if(pairLockBy && pairLockBy !== ME_ID) return;
 
-if(!card || card.matchedBy) return;
+  if(!card || card.matchedBy) return;
   if(flipped[idx]) return;
   if(Object.keys(flipped).length >= 2) return;
 
-// ล็อกคู่ตั้งแต่ใบแรก
+  // ล็อกคู่ตั้งแต่ใบแรก
   if(!pairLockBy){
     await fSet('rooms/'+currentRoomCode+'/pairLockBy', ME_ID);
   }
 
-await fSet('rooms/'+currentRoomCode+'/lockedBy', ME_ID);
+  await fSet('rooms/'+currentRoomCode+'/lockedBy', ME_ID);
 
-flipped[idx] = true;
+  flipped[idx] = true;
   await fSet('rooms/'+currentRoomCode+'/flipped', flipped);
   await refreshBoardRoom();
 
-const openIdx = Object.keys(flipped).map(Number);
+  const openIdx = Object.keys(flipped).map(Number);
 
-if(openIdx.length === 2){
+  if(openIdx.length === 2){
     const [a,b] = openIdx;
 
-if(cards[a].value === cards[b].value){
+    if(cards[a].value === cards[b].value){
       // ถูกคู่: คนเดิมเล่นต่อ
       await fSet('rooms/'+currentRoomCode+'/cards/'+a+'/matchedBy', ME_ID);
       await fSet('rooms/'+currentRoomCode+'/cards/'+b+'/matchedBy', ME_ID);
@@ -762,26 +762,26 @@ if(cards[a].value === cards[b].value){
         const room2 = await fGet('rooms/'+currentRoomCode);
         if(!room2) return;
 
-const flipped2 = room2.flipped || {};
+        const flipped2 = room2.flipped || {};
         const keys2 = Object.keys(flipped2).map(Number);
         if(keys2.length === 2 && keys2.includes(a) && keys2.includes(b)){
           await fSet('rooms/'+currentRoomCode+'/flipped', {});
         }
 
-await fDel('rooms/'+currentRoomCode+'/pairLockBy');
+        await fDel('rooms/'+currentRoomCode+'/pairLockBy');
 
-const players2 = room2.players || {};
+        const players2 = room2.players || {};
         const ids = Object.keys(players2);
         const currentIndex = ids.indexOf(ME_ID);
         const nextId = ids[(currentIndex + 1) % ids.length];
         await fSet('rooms/'+currentRoomCode+'/turnId', nextId);
 
-if(view === 'boardroom') await refreshBoardRoom();
+        if(view === 'boardroom') await refreshBoardRoom();
       }, 1100);
     }
   }
 
-await fDel('rooms/'+currentRoomCode+'/lockedBy');
+  await fDel('rooms/'+currentRoomCode+'/lockedBy');
   await refreshBoardRoom();
 }
 
@@ -792,17 +792,17 @@ async function boardLeave(){
     const remaining = {...players};
     delete remaining[ME_ID];
 
-if(Object.keys(remaining).length === 0){
+    if(Object.keys(remaining).length === 0){
       await fDel('rooms/'+currentRoomCode);
     }else{
       await fDel('rooms/'+currentRoomCode+'/players/'+ME_ID);
 
-if(room.status === 'playing'){
+      if(room.status === 'playing'){
         const ids = Object.keys(remaining);
         const turnWasMe = room.turnId === ME_ID;
         const lockWasMe = room.pairLockBy === ME_ID;
 
-if(turnWasMe){
+        if(turnWasMe){
           await fSet('rooms/'+currentRoomCode+'/turnId', ids[0]);
         }
         if(lockWasMe){
@@ -814,7 +814,7 @@ if(turnWasMe){
     }
   }
 
-currentRoomCode = null;
+  currentRoomCode = null;
   roomChatDraft = '';
   goto('boardgame');
 }
@@ -836,7 +836,7 @@ function bindInputHandlers(){
       e.target.style.height = Math.min(e.target.scrollHeight, 180) + 'px';
     };
 
-chatInput.onkeydown = (e)=>{
+    chatInput.onkeydown = (e)=>{
       if(e.key === 'Enter' && !e.shiftKey){
         e.preventDefault();
         roomChatSend();
@@ -850,21 +850,21 @@ async function roomChatSend(){
   const text = input ? input.value.trim() : '';
   if(!text || !currentRoomCode) return;
 
-await fPush('rooms/'+currentRoomCode+'/messages', {
+  await fPush('rooms/'+currentRoomCode+'/messages', {
     sender: ME_ID,
     name: ME_NAME || 'ผู้เล่น',
     text,
     time: Date.now()
   });
 
-roomChatDraft = '';
+  roomChatDraft = '';
   if(input){
     input.value = '';
     input.style.height = '44px';
     input.focus({ preventScroll: true });
   }
 
-await refreshBoardRoom();
+  await refreshBoardRoom();
 }
 
 /* ========= click delegation ========= */
@@ -872,11 +872,11 @@ document.addEventListener('click', async (e)=>{
   const el = e.target.closest('[data-action]');
   if(!el) return;
 
-const action = el.getAttribute('data-action');
+  const action = el.getAttribute('data-action');
 
-if(action === 'nav') goto(el.getAttribute('data-view'));
+  if(action === 'nav') goto(el.getAttribute('data-view'));
 
-else if(action === 'board-quickmatch') boardQuickMatch();
+  else if(action === 'board-quickmatch') boardQuickMatch();
   else if(action === 'board-createroom') boardCreateRoom();
   else if(action === 'board-joincode') boardJoinCode();
   else if(action === 'board-start') boardStart();
@@ -884,7 +884,7 @@ else if(action === 'board-quickmatch') boardQuickMatch();
   else if(action === 'board-leave') boardLeave();
   else if(action === 'board-rematch') boardRematch();
 
-else if(action === 'room-chat-send') roomChatSend();
+  else if(action === 'room-chat-send') roomChatSend();
 });
 
 /* ========= init ========= */
