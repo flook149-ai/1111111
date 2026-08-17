@@ -1,0 +1,758 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ใจเบา · พื้นที่ดูแลใจ</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4a6fa5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ใจเบา">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-top:#dbe6ef;
+    --bg-bottom:#eef2f6;
+    --surface:#ffffff;
+    --surface-soft:#f3f7fa;
+    --primary:#4a6fa5;
+    --primary-dark:#2e4c73;
+    --accent:#8fb8da;
+    --accent-soft:#dbe9f4;
+    --text:#2c3947;
+    --muted:#71869b;
+    --border:#dde6ee;
+    --danger:#c97575;
+    --success:#5f9e82;
+    --radius-lg:22px;
+    --radius-md:14px;
+    --radius-sm:10px;
+    --shadow:0 8px 24px rgba(46,76,115,0.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Sarabun',sans-serif;
+    color:var(--text);
+    background:linear-gradient(180deg,var(--bg-top) 0%, var(--bg-bottom) 45%, var(--bg-bottom) 100%);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{max-width:520px;margin:0 auto;min-height:100vh;padding:0 0 48px 0;position:relative;}
+  h1,h2,h3,.display{font-family:'Prompt',sans-serif;}
+  button{font-family:'Sarabun',sans-serif;cursor:pointer;}
+  ::selection{background:var(--accent-soft);}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:38px 24px 28px 24px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .breath-wrap{
+    width:96px;height:96px;margin:0 auto 18px auto;
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+  }
+  .breath-ring{
+    position:absolute;inset:0;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ffffff, var(--accent) 60%, var(--primary) 100%);
+    animation:breathe 5s ease-in-out infinite;
+    box-shadow:0 10px 30px rgba(74,111,165,0.35);
+  }
+  @keyframes breathe{
+    0%,100%{transform:scale(0.86);opacity:0.85;}
+    50%{transform:scale(1.08);opacity:1;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .breath-ring{animation:none;}
+  }
+  .hero h1{font-size:28px;font-weight:700;color:var(--primary-dark);margin:0 0 6px 0;letter-spacing:0.5px;}
+  .hero p{margin:0;color:var(--muted);font-size:14.5px;}
+
+  /* ---------- Section ---------- */
+  .section{padding:6px 20px 0 20px;}
+  .eyebrow{
+    font-family:'Prompt',sans-serif;
+    font-size:12.5px;font-weight:600;letter-spacing:1.6px;
+    color:var(--primary);text-transform:uppercase;
+    margin:22px 4px 12px 4px;
+  }
+
+  /* ---------- Cards ---------- */
+  .card-list{display:flex;flex-direction:column;gap:10px;}
+  .item-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    padding:16px 16px;
+    display:flex;align-items:center;gap:14px;
+    box-shadow:var(--shadow);
+    transition:transform .15s ease, box-shadow .15s ease;
+    text-align:left;width:100%;
+  }
+  .item-card:active{transform:scale(0.98);}
+  .item-icon{
+    width:44px;height:44px;border-radius:12px;
+    background:var(--accent-soft);
+    display:flex;align-items:center;justify-content:center;
+    font-size:21px;flex-shrink:0;
+  }
+  .item-body{flex:1;min-width:0;}
+  .item-title{font-family:'Prompt',sans-serif;font-weight:600;font-size:15.5px;color:var(--text);margin:0 0 2px 0;}
+  .item-desc{font-size:12.8px;color:var(--muted);margin:0;line-height:1.4;}
+  .item-chevron{color:var(--accent);font-size:18px;flex-shrink:0;}
+
+  /* ---------- Generic view ---------- */
+  .view{padding:18px 20px 8px 20px;}
+  .back-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    background:none;border:none;color:var(--primary);
+    font-size:14px;font-weight:500;padding:8px 4px;margin-bottom:8px;
+  }
+  .view-title{font-size:21px;font-weight:700;color:var(--primary-dark);margin:2px 0 4px 0;}
+  .view-sub{font-size:13px;color:var(--muted);margin:0 0 20px 0;line-height:1.5;}
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:20px;
+    box-shadow:var(--shadow);
+    margin-bottom:16px;
+  }
+  .btn{
+    border:none;border-radius:var(--radius-sm);
+    padding:12px 18px;font-size:14.5px;font-weight:600;font-family:'Sarabun',sans-serif;
+    width:100%;
+  }
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:active{background:var(--primary-dark);}
+  .btn-outline{background:transparent;color:var(--primary);border:1.5px solid var(--primary);}
+  .btn-soft{background:var(--accent-soft);color:var(--primary-dark);}
+  .btn:disabled{opacity:0.45;}
+  .input{
+    width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+    padding:11px 14px;font-size:14.5px;font-family:'Sarabun',sans-serif;color:var(--text);
+    background:var(--surface-soft);
+  }
+  .input:focus{outline:none;border-color:var(--accent);}
+  .row{display:flex;gap:10px;}
+  .row>*{flex:1;}
+  .muted-note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;}
+  .error-note{font-size:12.5px;color:var(--danger);margin-top:10px;line-height:1.5;}
+
+  /* players / lobby */
+  .player-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--accent-soft);color:var(--primary-dark);
+    border-radius:999px;padding:6px 12px;font-size:13px;font-weight:500;margin:3px 4px 3px 0;
+  }
+  .room-code{
+    font-family:'Prompt',sans-serif;font-size:26px;font-weight:700;letter-spacing:4px;
+    color:var(--primary-dark);text-align:center;margin:6px 0 14px 0;
+  }
+
+  /* board game grid */
+  .board-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+  .board-card{
+    aspect-ratio:1/1;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;background:var(--primary);color:transparent;
+    border:none;transition:transform .12s ease;
+  }
+  .board-card.open{background:var(--surface);color:var(--text);border:1.5px solid var(--accent);}
+  .board-card.matched{background:var(--success);color:#fff;opacity:0.55;}
+  .board-card:active{transform:scale(0.94);}
+  .score-strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .score-chip{
+    background:var(--surface-soft);border:1px solid var(--border);border-radius:999px;
+    padding:5px 12px;font-size:12.5px;color:var(--text);
+  }
+  .score-chip.me{border-color:var(--primary);color:var(--primary-dark);font-weight:600;}
+
+  /* chat */
+  .chat-window{
+    height:340px;overflow-y:auto;background:var(--surface-soft);
+    border-radius:var(--radius-md);padding:14px;margin-bottom:12px;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .msg{max-width:78%;padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.4;}
+  .msg.me{align-self:flex-end;background:var(--primary);color:#fff;border-bottom-right-radius:4px;}
+  .msg.them{align-self:flex-start;background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;}
+  .msg.sys{align-self:center;background:transparent;color:var(--muted);font-size:12px;}
+
+  /* vent */
+  textarea.input{resize:vertical;min-height:120px;font-family:'Sarabun',sans-serif;line-height:1.6;}
+  .entry{
+    background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:13px 15px;margin-bottom:10px;
+  }
+  .entry-time{font-size:11.5px;color:var(--muted);margin-bottom:5px;}
+  .entry-text{font-size:14px;line-height:1.55;white-space:pre-wrap;}
+  .empty-note{text-align:center;color:var(--muted);font-size:13.5px;padding:30px 10px;}
+
+  .spinner-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--primary);margin:0 2px;animation:blink 1.3s infinite;}
+  .spinner-dot:nth-child(2){animation-delay:.2s;}
+  .spinner-dot:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Firebase (Realtime Database) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDLyigr0Vp2TUT4P_vqN3L27s8EfRLwknM",
+  authDomain: "jaibao-c6484.firebaseapp.com",
+  databaseURL: "https://jaibao-c6484-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "jaibao-c6484",
+  storageBucket: "jaibao-c6484.firebasestorage.app",
+  messagingSenderId: "19469094184",
+  appId: "1:19469094184:web:e8e2009f95234a7ff4141d"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+</script>
+
+<script>
+/* ============ shared (Firebase) storage helpers ============ */
+async function fGet(path){ try{ const snap = await db.ref(path).get(); return snap.exists() ? snap.val() : null; }catch(e){ console.error('firebase get', path, e); return null; } }
+async function fSet(path, value){ try{ await db.ref(path).set(value); return true; }catch(e){ console.error('firebase set', path, e); return false; } }
+async function fDel(path){ try{ await db.ref(path).remove(); return true; }catch(e){ console.error('firebase del', path, e); return false; } }
+async function fPush(path, value){ try{ await db.ref(path).push(value); return true; }catch(e){ console.error('firebase push', path, e); return false; } }
+async function fIncrementScore(path){ try{ await db.ref(path).transaction(cur => (cur||0)+1); }catch(e){ console.error('firebase txn', path, e); } }
+
+/* ============ personal (localStorage) storage helpers ============ */
+function lGet(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+function lSet(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
+
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function roomCode(){ const s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c=''; for(let i=0;i<4;i++) c+=s[Math.floor(Math.random()*s.length)]; return c; }
+function nowStr(){
+  const d=new Date();
+  return d.toLocaleString('th-TH',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function escapeHtml(s){ const d=document.createElement('div'); d.innerText=s; return d.innerHTML; }
+
+/* ============ app state ============ */
+let ME_ID=null, ME_NAME=null;
+let view='home';
+let pollTimer=null;
+let currentRoomCode=null;
+let currentChatCode=null;
+let ventShowList=false;
+let lastError=null;
+
+function ensureIdentity(){
+  ME_NAME = lGet('nickname');
+  return new Promise((resolve)=>{
+    firebase.auth().onAuthStateChanged((user)=>{
+      if(user){
+        ME_ID = user.uid;
+        resolve();
+      } else {
+        firebase.auth().signInAnonymously().catch((e)=>{
+          console.error('anonymous sign-in failed', e);
+          lastError = 'เชื่อมต่อระบบยืนยันตัวตนไม่สำเร็จ ลองรีเฟรชหน้าเว็บ';
+          resolve();
+        });
+      }
+    });
+  });
+}
+
+/* ============ render root ============ */
+async function render(){
+  const app = document.getElementById('app');
+  if(view==='home') app.innerHTML = renderHome();
+  else if(view==='boardgame') app.innerHTML = await renderBoardGameEntry();
+  else if(view==='boardroom') app.innerHTML = await renderBoardRoom();
+  else if(view==='chat') app.innerHTML = await renderChatEntry();
+  else if(view==='chatroom') app.innerHTML = await renderChatRoom();
+  else if(view==='vent') app.innerHTML = renderVent();
+  bindEvents();
+}
+
+function goto(v){ view=v; lastError=null; if(pollTimer){clearInterval(pollTimer);pollTimer=null;} render(); }
+
+/* ============ HOME ============ */
+function renderHome(){
+  return `
+  <div class="hero">
+    <div class="breath-wrap"><div class="breath-ring"></div></div>
+    <h1>ใจเบา</h1>
+    <p>พื้นที่เล็ก ๆ ที่ตั้งใจดูแลใจของคุณ<br/>ไม่ต้องรีบ ไม่ต้องเก่ง แค่มาอยู่ตรงนี้ก็พอ</p>
+  </div>
+  <div class="section">
+    <div class="eyebrow">ข้อมูลของฉัน</div>
+    <div class="card-list">
+      <button class="item-card" data-action="ext" data-url="https://share.google/KdT7KIZI1xtATXECF">
+        <div class="item-icon">🧠</div>
+        <div class="item-body">
+          <p class="item-title">แบบทดสอบวัดความซึมเศร้า</p>
+          <p class="item-desc">ประเมินสภาวะใจเบื้องต้น · Source: สุขภาพใจ.com</p>
+        </div>
+        <div class="item-chevron">›</div>
+      </button>
+
+      <button class="item-card" data-action="ext" data-url="https://share.google/ZhRFy9UVYOg2fsnJW">
+        <div class="item-icon">😊</div>
+        <div class="item-body">
+          <p class="item-title">TSU Smile</p>
+          <p class="item-desc">แบบประเมินความสุข · Source: มหาวิทยาลัยทักษิณ</p>
+        </div>
+        <div class="item-chevron">›</div>
+      </button>
+
+      <button class="item-card" data-action="nav" data-view="boardgame">
+        <div class="item-icon">🎲</div>
+        <div class="item-body">
+          <p class="item-title">บอร์ดเกม</p>
+          <p class="item-desc">จับคู่เล่นเกมความจำกับเพื่อนออนไลน์ สูงสุด 4 คน</p>
+        </div>
+        <div class="item-chevron">›</div>
+      </button>
+
+      <button class="item-card" data-action="nav" data-view="chat">
+        <div class="item-icon">💬</div>
+        <div class="item-body">
+          <p class="item-title">คุยกับเพื่อน</p>
+          <p class="item-desc">จับคู่พูดคุยแบบส่วนตัว 1 ต่อ 1 นิรนาม</p>
+        </div>
+        <div class="item-chevron">›</div>
+      </button>
+
+      <button class="item-card" data-action="nav" data-view="vent">
+        <div class="item-icon">📝</div>
+        <div class="item-body">
+          <p class="item-title">พื้นที่ระบาย</p>
+          <p class="item-desc">เขียนระบายความในใจ และย้อนอ่านสิ่งที่เคยเขียน</p>
+        </div>
+        <div class="item-chevron">›</div>
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ============ BOARD GAME: lobby entry ============ */
+async function renderBoardGameEntry(){
+  return `
+  <div class="view">
+    <button class="back-btn" data-action="nav" data-view="home">← กลับหน้าหลัก</button>
+    <h2 class="view-title">🎲 บอร์ดเกม</h2>
+    <p class="view-sub">เกมจับคู่ความจำ เล่นพร้อมกันได้สูงสุด 4 คน แบบออนไลน์</p>
+
+    <div class="panel">
+      <label style="font-size:13px;color:var(--muted);">ชื่อที่ใช้แสดงในเกม</label>
+      <input class="input" id="nickname-input" placeholder="เช่น ฟ้าใส" value="${ME_NAME||''}" style="margin-top:6px;margin-bottom:14px;"/>
+      <button class="btn btn-primary" data-action="bg-quickmatch">🔀 สุ่มจับคู่ห้องที่ว่าง</button>
+
+      <div style="text-align:center;color:var(--muted);font-size:12px;margin:16px 0 12px 0;">— หรือ —</div>
+
+      <label style="font-size:13px;color:var(--muted);">ตั้งชื่อห้อง (ถ้าไม่ใส่ จะใช้ชื่อของคุณแทน)</label>
+      <input class="input" id="bg-roomname-input" placeholder="เช่น ห้องเพื่อนซี้" style="margin-top:6px;margin-bottom:10px;"/>
+      <label style="font-size:13px;color:var(--muted);">ตั้งรหัสห้องเอง (ถ้าไม่ใส่ ระบบจะสุ่มให้)</label>
+      <input class="input" id="bg-customcode-input" placeholder="เช่น FUN1" maxlength="8" style="text-transform:uppercase;margin-top:6px;margin-bottom:12px;"/>
+      <button class="btn btn-outline" data-action="bg-createroom">➕ สร้างห้องใหม่</button>
+
+      <div class="row" style="margin-top:14px;">
+        <input class="input" id="bg-code-input" placeholder="กรอกรหัสห้อง (ถ้ามี)" style="text-transform:uppercase;"/>
+        <button class="btn btn-outline" data-action="bg-joincode" style="flex:0 0 100px;">เข้าร่วม</button>
+      </div>
+      <p class="muted-note">ระบบจะจับคู่คุณกับผู้เล่นคนอื่นที่กำลังรอ หรือคุณสร้างห้องของตัวเองแล้วแชร์รหัสให้เพื่อนก็ได้</p>
+      ${lastError?`<p class="error-note">${escapeHtml(lastError)}</p>`:''}
+    </div>
+  </div>`;
+}
+
+async function bgQuickMatch(){
+  const nick = document.getElementById('nickname-input').value.trim() || 'เพื่อนใหม่';
+  ME_NAME = nick; lSet('nickname', nick);
+
+  const allRooms = await fGet('rooms') || {};
+  let joined=null;
+  for(const code in allRooms){
+    const room = allRooms[code];
+    const players = room && room.players ? room.players : {};
+    if(room && room.status==='waiting' && Object.keys(players).length<4 && !players[ME_ID]){
+      const ok = await fSet('rooms/'+code+'/players/'+ME_ID, {name:nick, score:0});
+      if(ok){ joined = code; break; }
+    }
+  }
+  if(!joined){
+    joined = roomCode();
+    const values=[]; for(let i=0;i<8;i++){values.push(i,i);}
+    values.sort(()=>Math.random()-0.5);
+    const cards = values.map(v=>({value:v, matchedBy:null}));
+    // written field-by-field: security rules protect each field separately,
+    // and the player entry must exist before status/flipped (which require membership)
+    let ok = await fSet('rooms/'+joined+'/players/'+ME_ID, {name:nick, score:0});
+    ok = ok && await fSet('rooms/'+joined+'/code', joined);
+    ok = ok && await fSet('rooms/'+joined+'/createdAt', Date.now());
+    ok = ok && await fSet('rooms/'+joined+'/cards', cards);
+    ok = ok && await fSet('rooms/'+joined+'/status', 'waiting');
+    ok = ok && await fSet('rooms/'+joined+'/flipped', {});
+    if(!ok){ lastError='เชื่อมต่อไม่สำเร็จ ลองใหม่อีกครั้ง'; render(); return; }
+  }
+  currentRoomCode = joined;
+  goto('boardroom');
+}
+
+async function bgCreateRoom(){
+  const nick = document.getElementById('nickname-input').value.trim() || 'เพื่อนใหม่';
+  const roomNameInput = document.getElementById('bg-roomname-input').value.trim();
+  let code = document.getElementById('bg-customcode-input').value.trim().toUpperCase();
+  ME_NAME = nick; lSet('nickname', nick);
+
+  if(code){
+    if(!/^[A-Z0-9]{2,8}$/.test(code)){ lastError='รหัสห้องควรเป็นตัวอักษร A-Z หรือตัวเลข ยาว 2-8 ตัว'; render(); return; }
+    const existing = await fGet('rooms/'+code);
+    if(existing){ lastError='รหัสห้องนี้มีคนใช้แล้ว ลองรหัสอื่น'; render(); return; }
+  } else {
+    code = roomCode();
+  }
+  const roomName = roomNameInput || ('ห้องของ '+nick);
+
+  const values=[]; for(let i=0;i<8;i++){values.push(i,i);}
+  values.sort(()=>Math.random()-0.5);
+  const cards = values.map(v=>({value:v, matchedBy:null}));
+
+  let ok = await fSet('rooms/'+code+'/players/'+ME_ID, {name:nick, score:0});
+  ok = ok && await fSet('rooms/'+code+'/code', code);
+  ok = ok && await fSet('rooms/'+code+'/roomName', roomName);
+  ok = ok && await fSet('rooms/'+code+'/createdAt', Date.now());
+  ok = ok && await fSet('rooms/'+code+'/cards', cards);
+  ok = ok && await fSet('rooms/'+code+'/status', 'waiting');
+  ok = ok && await fSet('rooms/'+code+'/flipped', {});
+  if(!ok){ lastError='สร้างห้องไม่สำเร็จ ลองใหม่อีกครั้ง (รหัสห้องอาจถูกใช้ไปแล้ว)'; render(); return; }
+
+  currentRoomCode = code;
+  goto('boardroom');
+}
+
+async function bgJoinCode(){
+  const nick = document.getElementById('nickname-input').value.trim() || 'เพื่อนใหม่';
+  const code = document.getElementById('bg-code-input').value.trim().toUpperCase();
+  if(!code) return;
+  ME_NAME = nick; lSet('nickname', nick);
+  const room = await fGet('rooms/'+code);
+  if(!room){ lastError='ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง'; render(); return; }
+  const players = room.players || {};
+  if(!players[ME_ID] && Object.keys(players).length<4){
+    await fSet('rooms/'+code+'/players/'+ME_ID, {name:nick, score:0});
+  }
+  currentRoomCode = code;
+  goto('boardroom');
+}
+
+/* ============ BOARD GAME: room ============ */
+async function renderBoardRoom(){
+  const room = await fGet('rooms/'+currentRoomCode);
+  if(!room) return `<div class="view"><button class="back-btn" data-action="nav" data-view="boardgame">← กลับ</button><p class="empty-note">ห้องนี้ถูกปิดไปแล้ว</p></div>`;
+
+  if(!pollTimer){ pollTimer = setInterval(()=>{ if(view==='boardroom') render(); }, 1600); }
+
+  const players = room.players || {};
+  const playerIds = Object.keys(players);
+
+  if(room.status==='waiting'){
+    return `
+    <div class="view">
+      <button class="back-btn" data-action="bg-leave">← ออกจากห้อง</button>
+      <h2 class="view-title">${room.roomName ? escapeHtml(room.roomName) : 'ห้องรอผู้เล่น'}</h2>
+      <div class="panel">
+        <div class="room-code">${room.code}</div>
+        <p style="text-align:center;color:var(--muted);font-size:13px;margin-top:-6px;">แชร์รหัสนี้ให้เพื่อน หรือรอระบบจับคู่ให้</p>
+        <div style="margin:16px 0 4px 0;">
+          ${playerIds.map(id=>`<span class="player-pill">🙂 ${escapeHtml(players[id].name)}${id===ME_ID?' (คุณ)':''}</span>`).join('')}
+        </div>
+        <p class="muted-note">รอผู้เล่น… <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span> (${playerIds.length}/4)</p>
+        <button class="btn btn-primary" style="margin-top:14px;" data-action="bg-start" ${playerIds.length<2?'disabled':''}>เริ่มเกม (${playerIds.length}/4 คน)</button>
+      </div>
+    </div>`;
+  }
+
+  // playing or finished
+  const cards = room.cards || [];
+  const flipped = room.flipped || {};
+  const allMatched = cards.length>0 && cards.every(c=>c.matchedBy);
+  const symbols=['🌤️','🌊','🌿','🍃','🌙','⭐','🌸','🍀'];
+  const sortedPlayers = playerIds.map(id=>({id, ...players[id]})).sort((a,b)=>b.score-a.score);
+
+  return `
+  <div class="view">
+    <button class="back-btn" data-action="bg-leave">← ออกจากห้อง</button>
+    <h2 class="view-title">🎲 ${room.roomName ? escapeHtml(room.roomName) : ('ห้อง '+room.code)}</h2>
+    <div class="score-strip">
+      ${playerIds.map(id=>`<span class="score-chip ${id===ME_ID?'me':''}">${escapeHtml(players[id].name)}: ${players[id].score||0}★</span>`).join('')}
+    </div>
+    ${allMatched ? `<div class="panel" style="text-align:center;"><p style="font-family:Prompt;font-weight:600;font-size:17px;color:var(--primary-dark);">🎉 จบเกมแล้ว!</p><p class="view-sub" style="margin:6px 0 0 0;">ผู้ชนะ: ${escapeHtml(sortedPlayers[0]?.name||'-')}</p><button class="btn btn-soft" style="margin-top:10px;" data-action="nav" data-view="boardgame">เล่นห้องใหม่</button></div>` : ''}
+    <div class="board-grid">
+      ${cards.map((c,i)=>{
+        const isFlipped = !!flipped[i];
+        const open = c.matchedBy || isFlipped;
+        const cls = c.matchedBy ? 'matched' : (isFlipped ? 'open':'');
+        return `<button class="board-card ${cls}" data-action="bg-flip" data-idx="${i}">${open?symbols[c.value]:''}</button>`;
+      }).join('')}
+    </div>
+    <p class="muted-note">แตะการ์ดเพื่อเปิด จับคู่สัญลักษณ์ให้ตรงกันเพื่อได้คะแนน</p>
+  </div>`;
+}
+
+async function bgStart(){
+  await fSet('rooms/'+currentRoomCode+'/status', 'playing');
+  render();
+}
+
+async function bgFlip(idx){
+  const room = await fGet('rooms/'+currentRoomCode);
+  if(!room || room.status!=='playing') return;
+  const cards = room.cards || [];
+  const flipped = room.flipped || {};
+  const card = cards[idx];
+  if(!card || card.matchedBy) return;
+  if(flipped[idx]) return;
+  if(Object.keys(flipped).length>=2) return;
+
+  flipped[idx] = true;
+  await fSet('rooms/'+currentRoomCode+'/flipped', flipped);
+  render();
+
+  const openIdx = Object.keys(flipped).map(Number);
+  if(openIdx.length===2){
+    const [a,b] = openIdx;
+    if(cards[a].value === cards[b].value){
+      await fSet('rooms/'+currentRoomCode+'/cards/'+a+'/matchedBy', ME_ID);
+      await fSet('rooms/'+currentRoomCode+'/cards/'+b+'/matchedBy', ME_ID);
+      await fSet('rooms/'+currentRoomCode+'/flipped', {});
+      await fIncrementScore('rooms/'+currentRoomCode+'/players/'+ME_ID+'/score');
+      render();
+    } else {
+      setTimeout(async ()=>{
+        const room2 = await fGet('rooms/'+currentRoomCode);
+        if(!room2) return;
+        const flipped2 = room2.flipped || {};
+        const keys2 = Object.keys(flipped2).map(Number);
+        if(keys2.length===2 && keys2.includes(a) && keys2.includes(b)){
+          await fSet('rooms/'+currentRoomCode+'/flipped', {});
+        }
+        if(view==='boardroom') render();
+      }, 1100);
+    }
+  }
+}
+
+async function bgLeave(){
+  const room = await fGet('rooms/'+currentRoomCode);
+  if(room){
+    await fDel('rooms/'+currentRoomCode+'/players/'+ME_ID);
+    const remaining = await fGet('rooms/'+currentRoomCode+'/players');
+    if(!remaining || Object.keys(remaining).length===0){
+      await fDel('rooms/'+currentRoomCode);
+    }
+  }
+  currentRoomCode=null;
+  goto('boardgame');
+}
+
+/* ============ CHAT: entry / matching ============ */
+async function renderChatEntry(){
+  const w = await fGet('chatwait/'+ME_ID);
+  if(w){
+    if(w.status==='matched' && w.roomCode){
+      await fDel('chatwait/'+ME_ID);
+      currentChatCode = w.roomCode;
+      goto('chatroom');
+      return renderChatRoom();
+    }
+    if(w.status==='waiting'){
+      if(!pollTimer){ pollTimer=setInterval(()=>{ if(view==='chat') render(); }, 1600); }
+      return `
+      <div class="view">
+        <button class="back-btn" data-action="chat-cancel">← ยกเลิกและกลับหน้าหลัก</button>
+        <h2 class="view-title">💬 คุยกับเพื่อน</h2>
+        <div class="panel" style="text-align:center;">
+          <p style="font-family:Prompt;font-weight:600;">กำลังหาคู่สนทนา…</p>
+          <p class="muted-note" style="margin-top:6px;">โปรดรอสักครู่ <span class="spinner-dot"></span><span class="spinner-dot"></span><span class="spinner-dot"></span></p>
+        </div>
+      </div>`;
+    }
+  }
+  return `
+  <div class="view">
+    <button class="back-btn" data-action="nav" data-view="home">← กลับหน้าหลัก</button>
+    <h2 class="view-title">💬 คุยกับเพื่อน</h2>
+    <p class="view-sub">จับคู่พูดคุยกับใครสักคนแบบนิรนาม 1 ต่อ 1 ไม่มีการเก็บชื่อจริง</p>
+    <div class="panel">
+      <label style="font-size:13px;color:var(--muted);">ชื่อที่อยากให้อีกฝ่ายเห็น</label>
+      <input class="input" id="chat-nick-input" placeholder="เช่น คนแปลกหน้าใจดี" value="${ME_NAME||''}" style="margin-top:6px;margin-bottom:14px;"/>
+      <button class="btn btn-primary" data-action="chat-find">🔍 หาคู่สนทนา</button>
+      <p class="muted-note">หากไม่มีใครกำลังรออยู่ ระบบจะสร้างห้องรอให้คุณ และจับคู่ให้ทันทีที่มีคนเข้ามา</p>
+      ${lastError?`<p class="error-note">${escapeHtml(lastError)}</p>`:''}
+    </div>
+  </div>`;
+}
+
+async function chatFind(){
+  const nick = document.getElementById('chat-nick-input').value.trim() || 'เพื่อนนิรนาม';
+  ME_NAME = nick; lSet('nickname', nick);
+
+  const allWaiting = await fGet('chatwait') || {};
+  let partnerId=null, partnerData=null;
+  for(const id in allWaiting){
+    if(id===ME_ID) continue;
+    const w = allWaiting[id];
+    if(w && w.status==='waiting'){ partnerId=id; partnerData=w; break; }
+  }
+
+  if(partnerData){
+    const code = roomCode();
+    const room = { code, players:{ [partnerId]:{name:partnerData.name}, [ME_ID]:{name:nick} } };
+    await fSet('chatrooms/'+code, room);
+    await fPush('chatrooms/'+code+'/messages', {sender:'sys', text:'เริ่มบทสนทนาแล้ว กล่าวทักทายกันได้เลย 🙂', time:Date.now()});
+    await fSet('chatwait/'+partnerId, {name:partnerData.name, status:'matched', roomCode:code});
+    await fDel('chatwait/'+ME_ID);
+    currentChatCode = code;
+    goto('chatroom');
+  } else {
+    await fSet('chatwait/'+ME_ID, {name:nick, status:'waiting', roomCode:null});
+    render();
+  }
+}
+
+async function chatCancel(){
+  await fDel('chatwait/'+ME_ID);
+  goto('home');
+}
+
+/* ============ CHAT: room ============ */
+async function renderChatRoom(){
+  const room = await fGet('chatrooms/'+currentChatCode);
+  if(!room) return `<div class="view"><button class="back-btn" data-action="nav" data-view="home">← กลับหน้าหลัก</button><p class="empty-note">บทสนทนานี้สิ้นสุดแล้ว</p></div>`;
+  if(!pollTimer){ pollTimer=setInterval(()=>{ if(view==='chatroom') render(); }, 1400); }
+
+  const players = room.players || {};
+  const partnerId = Object.keys(players).find(id=>id!==ME_ID);
+  const partnerName = partnerId ? players[partnerId].name : 'เพื่อน';
+
+  const messages = Object.values(room.messages || {}).sort((a,b)=>a.time-b.time);
+
+  return `
+  <div class="view">
+    <button class="back-btn" data-action="chat-leave">← ออกจากบทสนทนา</button>
+    <h2 class="view-title">💬 คุยกับ ${escapeHtml(partnerName)}</h2>
+    <div class="chat-window" id="chat-window">
+      ${messages.map(m=>{
+        if(m.sender==='sys') return `<div class="msg sys">${escapeHtml(m.text)}</div>`;
+        return `<div class="msg ${m.sender===ME_ID?'me':'them'}">${escapeHtml(m.text)}</div>`;
+      }).join('')}
+    </div>
+    <div class="row">
+      <input class="input" id="chat-msg-input" placeholder="พิมพ์ข้อความ…"/>
+      <button class="btn btn-primary" data-action="chat-send" style="flex:0 0 84px;">ส่ง</button>
+    </div>
+  </div>`;
+}
+
+async function chatSend(){
+  const input = document.getElementById('chat-msg-input');
+  const text = input.value.trim();
+  if(!text) return;
+  await fPush('chatrooms/'+currentChatCode+'/messages', {sender:ME_ID, text, time:Date.now()});
+  input.value='';
+  render();
+  setTimeout(()=>{ const w=document.getElementById('chat-window'); if(w) w.scrollTop=w.scrollHeight; }, 30);
+}
+
+async function chatLeave(){
+  currentChatCode=null;
+  goto('home');
+}
+
+/* ============ VENT SPACE (private, on-device only) ============ */
+function renderVent(){
+  const raw = lGet('vent_entries');
+  let entries = [];
+  if(raw){ try{ entries=JSON.parse(raw); }catch(e){ entries=[]; } }
+  entries = entries.slice().reverse();
+
+  return `
+  <div class="view">
+    <button class="back-btn" data-action="nav" data-view="home">← กลับหน้าหลัก</button>
+    <h2 class="view-title">📝 พื้นที่ระบาย</h2>
+    <p class="view-sub">เขียนสิ่งที่อยู่ในใจได้อย่างอิสระ ข้อความนี้เก็บไว้ในเครื่องของคุณเท่านั้น ไม่มีการส่งขึ้นออนไลน์</p>
+
+    ${!ventShowList ? `
+    <div class="panel">
+      <textarea class="input" id="vent-text" placeholder="วันนี้เป็นยังไงบ้าง…"></textarea>
+      <button class="btn btn-primary" style="margin-top:12px;" data-action="vent-save">บันทึกข้อความ</button>
+      <button class="btn btn-soft" style="margin-top:8px;" data-action="vent-toggle">📖 อ่านข้อความที่เคยเขียน (${entries.length})</button>
+    </div>
+    ` : `
+    <button class="btn btn-outline" style="margin-bottom:14px;" data-action="vent-toggle">← กลับไปเขียนข้อความใหม่</button>
+    ${entries.length===0 ? `<p class="empty-note">ยังไม่มีข้อความที่บันทึกไว้</p>` :
+      entries.map(e=>`<div class="entry"><div class="entry-time">${e.time}</div><div class="entry-text">${escapeHtml(e.text)}</div></div>`).join('')}
+    `}
+  </div>`;
+}
+
+function ventSave(){
+  const ta = document.getElementById('vent-text');
+  const text = ta.value.trim();
+  if(!text) return;
+  const raw = lGet('vent_entries');
+  let entries = [];
+  if(raw){ try{ entries=JSON.parse(raw); }catch(e){ entries=[]; } }
+  entries.push({id:uid(), text, time:nowStr()});
+  lSet('vent_entries', JSON.stringify(entries));
+  ta.value='';
+  ventShowList=true;
+  render();
+}
+
+/* ============ event binding ============ */
+function bindEvents(){
+  document.querySelectorAll('[data-action]').forEach(el=>{
+    el.onclick = async (e)=>{
+      const action = el.getAttribute('data-action');
+      if(action==='ext') window.open(el.getAttribute('data-url'), '_blank');
+      else if(action==='nav') goto(el.getAttribute('data-view'));
+      else if(action==='bg-quickmatch') bgQuickMatch();
+      else if(action==='bg-createroom') bgCreateRoom();
+      else if(action==='bg-joincode') bgJoinCode();
+      else if(action==='bg-start') bgStart();
+      else if(action==='bg-flip') bgFlip(parseInt(el.getAttribute('data-idx')));
+      else if(action==='bg-leave') bgLeave();
+      else if(action==='chat-find') chatFind();
+      else if(action==='chat-cancel') chatCancel();
+      else if(action==='chat-send') chatSend();
+      else if(action==='chat-leave') chatLeave();
+      else if(action==='vent-save') ventSave();
+      else if(action==='vent-toggle'){ ventShowList=!ventShowList; render(); }
+    };
+  });
+  const chatInput = document.getElementById('chat-msg-input');
+  if(chatInput) chatInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') chatSend(); });
+}
+
+/* ============ init ============ */
+(async function init(){
+  await ensureIdentity();
+  render();
+})();
+</script>
+</body>
+</html>
