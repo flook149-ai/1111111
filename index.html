@@ -48,7 +48,6 @@
   button{font-family:'Sarabun',sans-serif;cursor:pointer;}
   ::selection{background:var(--accent-soft);}
 
-  /* ---------- Hero ---------- */
   .hero{
     padding:38px 24px 28px 24px;
     text-align:center;
@@ -77,7 +76,6 @@
   .hero h1{font-size:28px;font-weight:700;color:var(--primary-dark);margin:0 0 6px 0;letter-spacing:0.5px;}
   .hero p{margin:0;color:var(--muted);font-size:14.5px;}
 
-  /* ---------- Section ---------- */
   .section{padding:6px 20px 0 20px;}
   .eyebrow{
     font-family:'Prompt',sans-serif;
@@ -86,7 +84,6 @@
     margin:22px 4px 12px 4px;
   }
 
-  /* ---------- Cards ---------- */
   .card-list{display:flex;flex-direction:column;gap:10px;}
   .item-card{
     background:var(--surface);
@@ -110,7 +107,6 @@
   .item-desc{font-size:12.8px;color:var(--muted);margin:0;line-height:1.4;}
   .item-chevron{color:var(--accent);font-size:18px;flex-shrink:0;}
 
-  /* ---------- Generic view ---------- */
   .view{padding:18px 20px 8px 20px;}
   .back-btn{
     display:inline-flex;align-items:center;gap:6px;
@@ -149,7 +145,6 @@
   .muted-note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;}
   .error-note{font-size:12.5px;color:var(--danger);margin-top:10px;line-height:1.5;}
 
-  /* players / lobby */
   .player-pill{
     display:inline-flex;align-items:center;gap:6px;
     background:var(--accent-soft);color:var(--primary-dark);
@@ -160,7 +155,6 @@
     color:var(--primary-dark);text-align:center;margin:6px 0 14px 0;
   }
 
-  /* board game grid */
   .board-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
   .board-card{
     aspect-ratio:1/1;border-radius:10px;
@@ -178,7 +172,6 @@
   }
   .score-chip.me{border-color:var(--primary);color:var(--primary-dark);font-weight:600;}
 
-  /* chat */
   .chat-window{
     height:340px;overflow-y:auto;background:var(--surface-soft);
     border-radius:var(--radius-md);padding:14px;margin-bottom:12px;
@@ -189,7 +182,6 @@
   .msg.them{align-self:flex-start;background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;}
   .msg.sys{align-self:center;background:transparent;color:var(--muted);font-size:12px;}
 
-  /* vent */
   textarea.input{resize:vertical;min-height:120px;font-family:'Sarabun',sans-serif;line-height:1.6;}
   .entry{
     background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);
@@ -254,6 +246,7 @@ let currentRoomCode=null;
 let currentChatCode=null;
 let ventShowList=false;
 let lastError=null;
+let chatDraft='';
 
 function ensureIdentity(){
   ME_NAME = lGet('nickname');
@@ -285,7 +278,12 @@ async function render(){
   bindEvents();
 }
 
-function goto(v){ view=v; lastError=null; if(pollTimer){clearInterval(pollTimer);pollTimer=null;} render(); }
+function goto(v){
+  view=v;
+  lastError=null;
+  if(pollTimer){ clearInterval(pollTimer); pollTimer=null; }
+  render();
+}
 
 /* ============ HOME ============ */
 function renderHome(){
@@ -396,8 +394,7 @@ async function bgQuickMatch(){
     const values=[]; for(let i=0;i<8;i++){values.push(i,i);}
     values.sort(()=>Math.random()-0.5);
     const cards = values.map(v=>({value:v, matchedBy:null}));
-    // written field-by-field: security rules protect each field separately,
-    // and the player entry must exist before status/flipped (which require membership)
+
     let ok = await fSet('rooms/'+joined+'/players/'+ME_ID, {name:nick, score:0});
     ok = ok && await fSet('rooms/'+joined+'/code', joined);
     ok = ok && await fSet('rooms/'+joined+'/createdAt', Date.now());
@@ -452,7 +449,7 @@ async function bgJoinCode(){
 
   const room = await fGet('rooms/'+code);
   if(!room){
-    lastError = 'ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง';
+    lastError='ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง';
     render();
     return;
   }
@@ -461,13 +458,13 @@ async function bgJoinCode(){
   const playerCount = Object.keys(players).length;
 
   if(room.status !== 'waiting'){
-    lastError = 'ห้องนี้กำลังเล่นอยู่แล้ว';
+    lastError='ห้องนี้กำลังเล่นอยู่แล้ว';
     render();
     return;
   }
 
   if(!players[ME_ID] && playerCount >= 4){
-    lastError = 'ห้องนี้เต็มแล้ว';
+    lastError='ห้องนี้เต็มแล้ว';
     render();
     return;
   }
@@ -475,7 +472,7 @@ async function bgJoinCode(){
   if(!players[ME_ID]){
     const ok = await fSet('rooms/'+code+'/players/'+ME_ID, {name:nick, score:0});
     if(!ok){
-      lastError = 'เข้าห้องไม่สำเร็จ ลองใหม่อีกครั้ง';
+      lastError='เข้าห้องไม่สำเร็จ ลองใหม่อีกครั้ง';
       render();
       return;
     }
@@ -484,6 +481,7 @@ async function bgJoinCode(){
   currentRoomCode = code;
   goto('boardroom');
 }
+
 /* ============ BOARD GAME: room ============ */
 async function renderBoardRoom(){
   const room = await fGet('rooms/'+currentRoomCode);
@@ -511,7 +509,6 @@ async function renderBoardRoom(){
     </div>`;
   }
 
-  // playing or finished
   const cards = room.cards || [];
   const flipped = room.flipped || {};
   const allMatched = cards.length>0 && cards.every(c=>c.matchedBy);
@@ -586,11 +583,11 @@ async function bgLeave(){
   if(room){
     await fDel('rooms/'+currentRoomCode+'/players/'+ME_ID);
     const remaining = await fGet('rooms/'+currentRoomCode+'/players');
-    if(!remaining || Object.keys(remaining).length === 0){
+    if(!remaining || Object.keys(remaining).length===0){
       await fDel('rooms/'+currentRoomCode);
     }
   }
-  currentRoomCode = null;
+  currentRoomCode=null;
   goto('boardgame');
 }
 
@@ -601,6 +598,7 @@ async function renderChatEntry(){
     if(w.status==='matched' && w.roomCode){
       await fDel('chatwait/'+ME_ID);
       currentChatCode = w.roomCode;
+      chatDraft = '';
       goto('chatroom');
       return renderChatRoom();
     }
@@ -624,7 +622,7 @@ async function renderChatEntry(){
     <p class="view-sub">จับคู่พูดคุยกับใครสักคนแบบนิรนาม 1 ต่อ 1 ไม่มีการเก็บชื่อจริง</p>
     <div class="panel">
       <label style="font-size:13px;color:var(--muted);">ชื่อที่อยากให้อีกฝ่ายเห็น</label>
-      <input class="input" id="chat-nick-input" placeholder="เช่น คนแปลกหน้าใจดี" value="${ME_NAME||''}" style="margin-top:6px;margin-bottom:14px;"/>
+      <input class="input" id="chat-nick-input" placeholder="เช่น คนแปลกหน้าใจดี" value="${escapeHtml(ME_NAME||'')}" style="margin-top:6px;margin-bottom:14px;"/>
       <button class="btn btn-primary" data-action="chat-find">🔍 หาคู่สนทนา</button>
       <p class="muted-note">หากไม่มีใครกำลังรออยู่ ระบบจะสร้างห้องรอให้คุณ และจับคู่ให้ทันทีที่มีคนเข้ามา</p>
       ${lastError?`<p class="error-note">${escapeHtml(lastError)}</p>`:''}
@@ -634,7 +632,8 @@ async function renderChatEntry(){
 
 async function chatFind(){
   const nick = document.getElementById('chat-nick-input').value.trim() || 'เพื่อนนิรนาม';
-  ME_NAME = nick; lSet('nickname', nick);
+  ME_NAME = nick;
+  lSet('nickname', nick);
 
   const allWaiting = await fGet('chatwait') || {};
   let partnerId=null, partnerData=null;
@@ -646,12 +645,20 @@ async function chatFind(){
 
   if(partnerData){
     const code = roomCode();
-    const room = { code, players:{ [partnerId]:{name:partnerData.name}, [ME_ID]:{name:nick} } };
+    const room = {
+      code,
+      players:{
+        [partnerId]:{name:partnerData.name},
+        [ME_ID]:{name:nick}
+      },
+      messages:{}
+    };
     await fSet('chatrooms/'+code, room);
     await fPush('chatrooms/'+code+'/messages', {sender:'sys', text:'เริ่มบทสนทนาแล้ว กล่าวทักทายกันได้เลย 🙂', time:Date.now()});
     await fSet('chatwait/'+partnerId, {name:partnerData.name, status:'matched', roomCode:code});
     await fDel('chatwait/'+ME_ID);
     currentChatCode = code;
+    chatDraft = '';
     goto('chatroom');
   } else {
     await fSet('chatwait/'+ME_ID, {name:nick, status:'waiting', roomCode:null});
@@ -661,7 +668,8 @@ async function chatFind(){
 
 async function chatCancel(){
   await fDel('chatwait/'+ME_ID);
-  currentChatCode = null;
+  chatDraft='';
+  currentChatCode=null;
   goto('home');
 }
 
@@ -688,7 +696,7 @@ async function renderChatRoom(){
       }).join('')}
     </div>
     <div class="row">
-      <input class="input" id="chat-msg-input" placeholder="พิมพ์ข้อความ…"/>
+      <input class="input" id="chat-msg-input" placeholder="พิมพ์ข้อความ…" value="${escapeHtml(chatDraft)}"/>
       <button class="btn btn-primary" data-action="chat-send" style="flex:0 0 84px;">ส่ง</button>
     </div>
   </div>`;
@@ -696,29 +704,33 @@ async function renderChatRoom(){
 
 async function chatSend(){
   const input = document.getElementById('chat-msg-input');
-  const text = input.value.trim();
+  const text = input ? input.value.trim() : '';
   if(!text) return;
+
   await fPush('chatrooms/'+currentChatCode+'/messages', {sender:ME_ID, text, time:Date.now()});
-  input.value='';
+  chatDraft='';
+  if(input) input.value='';
+
   render();
-  setTimeout(()=>{ const w=document.getElementById('chat-window'); if(w) w.scrollTop=w.scrollHeight; }, 30);
+  setTimeout(()=>{
+    const w=document.getElementById('chat-window');
+    if(w) w.scrollTop=w.scrollHeight;
+  }, 30);
 }
 
 async function chatLeave(){
   if(currentChatCode){
     const room = await fGet('chatrooms/'+currentChatCode);
-
     if(room && room.players && room.players[ME_ID]){
       await fDel('chatrooms/'+currentChatCode+'/players/'+ME_ID);
-
       const remaining = await fGet('chatrooms/'+currentChatCode+'/players');
-      if(!remaining || Object.keys(remaining).length === 0){
+      if(!remaining || Object.keys(remaining).length===0){
         await fDel('chatrooms/'+currentChatCode);
       }
     }
   }
-
-  currentChatCode = null;
+  chatDraft='';
+  currentChatCode=null;
   goto('home');
 }
 
@@ -784,8 +796,16 @@ function bindEvents(){
       else if(action==='vent-toggle'){ ventShowList=!ventShowList; render(); }
     };
   });
+
   const chatInput = document.getElementById('chat-msg-input');
-  if(chatInput) chatInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') chatSend(); });
+  if(chatInput){
+    chatInput.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter') chatSend();
+    });
+    chatInput.addEventListener('input', (e)=>{
+      chatDraft = e.target.value;
+    });
+  }
 }
 
 /* ============ init ============ */
