@@ -252,6 +252,7 @@ let currentChatCode=null;
 let ventShowList=false;
 let lastError=null;
 let chatDraft='';
+let chatFocusDone=false;
 
 function ensureIdentity(){
   ME_NAME = lGet('nickname');
@@ -287,6 +288,7 @@ function goto(v){
   view=v;
   lastError=null;
   if(pollTimer){ clearInterval(pollTimer); pollTimer=null; }
+  if(v === 'chatroom') chatFocusDone = false;
   render();
 }
 
@@ -645,19 +647,6 @@ function renderChatMessages(messages, meId){
   }).join('');
 }
 
-function focusChatInput(){
-  setTimeout(()=>{
-    const input = document.getElementById('chat-msg-input');
-    if(input){
-      input.focus({ preventScroll: true });
-      const len = input.value.length;
-      if(typeof input.setSelectionRange === 'function'){
-        input.setSelectionRange(len, len);
-      }
-    }
-  }, 0);
-}
-
 async function refreshChatRoom(){
   if(view !== 'chatroom') return;
 
@@ -696,6 +685,7 @@ async function renderChatEntry(){
       await fDel('chatwait/'+ME_ID);
       currentChatCode = w.roomCode;
       chatDraft = '';
+      chatFocusDone = false;
       goto('chatroom');
       return renderChatRoom();
     }
@@ -791,6 +781,7 @@ async function chatFind(){
 
     currentChatCode = code;
     chatDraft = '';
+    chatFocusDone = false;
     goto('chatroom');
   } else {
     await fSet('chatwait/'+ME_ID, {
@@ -807,6 +798,7 @@ async function chatCancel(){
   await fDel('chatwait/'+ME_ID);
   chatDraft = '';
   currentChatCode = null;
+  chatFocusDone = false;
   goto('home');
 }
 
@@ -827,8 +819,6 @@ async function renderChatRoom(){
   const partnerId = Object.keys(players).find(id => id!==ME_ID);
   const partnerName = partnerId ? players[partnerId].name : 'เพื่อน';
   const messages = Object.values(room.messages || {}).sort((a,b)=>a.time-b.time);
-
-  focusChatInput();
 
   return `
   <div class="view">
@@ -885,6 +875,7 @@ async function chatLeave(){
 
   chatDraft='';
   currentChatCode=null;
+  chatFocusDone=false;
   goto('home');
 }
 
@@ -953,20 +944,25 @@ function bindEvents(){
 
   const chatInput = document.getElementById('chat-msg-input');
   if(chatInput){
-    chatInput.addEventListener('input', (e)=>{
+    chatInput.oninput = (e)=>{
       chatDraft = e.target.value;
       e.target.style.height = 'auto';
       e.target.style.height = Math.min(e.target.scrollHeight, 180) + 'px';
-    });
+    };
 
-    chatInput.addEventListener('keydown', (e)=>{
+    chatInput.onkeydown = (e)=>{
       if(e.key === 'Enter' && !e.shiftKey){
         e.preventDefault();
         chatSend();
       }
-    });
+    };
 
-    chatInput.focus({ preventScroll: true });
+    if(view === 'chatroom' && !chatFocusDone){
+      chatFocusDone = true;
+      setTimeout(()=>{
+        chatInput.focus({ preventScroll: true });
+      }, 0);
+    }
   }
 }
 
