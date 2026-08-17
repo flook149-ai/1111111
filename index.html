@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -447,17 +446,44 @@ async function bgJoinCode(){
   const nick = document.getElementById('nickname-input').value.trim() || 'เพื่อนใหม่';
   const code = document.getElementById('bg-code-input').value.trim().toUpperCase();
   if(!code) return;
-  ME_NAME = nick; lSet('nickname', nick);
+
+  ME_NAME = nick;
+  lSet('nickname', nick);
+
   const room = await fGet('rooms/'+code);
-  if(!room){ lastError='ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง'; render(); return; }
-  const players = room.players || {};
-  if(!players[ME_ID] && Object.keys(players).length<4){
-    await fSet('rooms/'+code+'/players/'+ME_ID, {name:nick, score:0});
+  if(!room){
+    lastError = 'ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง';
+    render();
+    return;
   }
+
+  const players = room.players || {};
+  const playerCount = Object.keys(players).length;
+
+  if(room.status !== 'waiting'){
+    lastError = 'ห้องนี้กำลังเล่นอยู่แล้ว';
+    render();
+    return;
+  }
+
+  if(!players[ME_ID] && playerCount >= 4){
+    lastError = 'ห้องนี้เต็มแล้ว';
+    render();
+    return;
+  }
+
+  if(!players[ME_ID]){
+    const ok = await fSet('rooms/'+code+'/players/'+ME_ID, {name:nick, score:0});
+    if(!ok){
+      lastError = 'เข้าห้องไม่สำเร็จ ลองใหม่อีกครั้ง';
+      render();
+      return;
+    }
+  }
+
   currentRoomCode = code;
   goto('boardroom');
 }
-
 /* ============ BOARD GAME: room ============ */
 async function renderBoardRoom(){
   const room = await fGet('rooms/'+currentRoomCode);
@@ -560,11 +586,11 @@ async function bgLeave(){
   if(room){
     await fDel('rooms/'+currentRoomCode+'/players/'+ME_ID);
     const remaining = await fGet('rooms/'+currentRoomCode+'/players');
-    if(!remaining || Object.keys(remaining).length===0){
+    if(!remaining || Object.keys(remaining).length === 0){
       await fDel('rooms/'+currentRoomCode);
     }
   }
-  currentRoomCode=null;
+  currentRoomCode = null;
   goto('boardgame');
 }
 
@@ -635,6 +661,7 @@ async function chatFind(){
 
 async function chatCancel(){
   await fDel('chatwait/'+ME_ID);
+  currentChatCode = null;
   goto('home');
 }
 
@@ -678,7 +705,20 @@ async function chatSend(){
 }
 
 async function chatLeave(){
-  currentChatCode=null;
+  if(currentChatCode){
+    const room = await fGet('chatrooms/'+currentChatCode);
+
+    if(room && room.players && room.players[ME_ID]){
+      await fDel('chatrooms/'+currentChatCode+'/players/'+ME_ID);
+
+      const remaining = await fGet('chatrooms/'+currentChatCode+'/players');
+      if(!remaining || Object.keys(remaining).length === 0){
+        await fDel('chatrooms/'+currentChatCode);
+      }
+    }
+  }
+
+  currentChatCode = null;
   goto('home');
 }
 
