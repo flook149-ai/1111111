@@ -231,10 +231,43 @@ const db = firebase.database();
 </script>
 
 <script>
-async function fGet(path){ try{ const snap = await db.ref(path).get(); return snap.exists() ? snap.val() : null; }catch(e){ console.error('firebase get', path, e); return null; } }
-async function fSet(path, value){ try{ await db.ref(path).set(value); return true; }catch(e){ console.error('firebase set', path, e); return false; } }
-async function fDel(path){ try{ await db.ref(path).remove(); return true; }catch(e){ console.error('firebase del', path, e); return false; } }
-async function fPush(path, value){ try{ await db.ref(path).push(value); return true; }catch(e){ console.error('firebase push', path, e); return false; } }
+/* storage helpers */
+async function fGet(path){
+  try{
+    const snap = await db.ref(path).get();
+    return snap.exists() ? snap.val() : null;
+  }catch(e){
+    console.error('firebase get', path, e);
+    return null;
+  }
+}
+async function fSet(path, value){
+  try{
+    await db.ref(path).set(value);
+    return true;
+  }catch(e){
+    console.error('firebase set', path, e);
+    return false;
+  }
+}
+async function fDel(path){
+  try{
+    await db.ref(path).remove();
+    return true;
+  }catch(e){
+    console.error('firebase del', path, e);
+    return false;
+  }
+}
+async function fPush(path, value){
+  try{
+    await db.ref(path).push(value);
+    return true;
+  }catch(e){
+    console.error('firebase push', path, e);
+    return false;
+  }
+}
 async function fPushReturnKey(path, value){
   try{
     const ref = db.ref(path).push();
@@ -245,7 +278,13 @@ async function fPushReturnKey(path, value){
     return null;
   }
 }
-async function fIncrementScore(path){ try{ await db.ref(path).transaction(cur => (cur||0)+1); }catch(e){ console.error('firebase txn', path, e); } }
+async function fIncrementScore(path){
+  try{
+    await db.ref(path).transaction(cur => (cur||0)+1);
+  }catch(e){
+    console.error('firebase txn', path, e);
+  }
+}
 
 function lGet(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
 function lSet(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
@@ -257,6 +296,7 @@ function nowStr(){ return formatTime(Date.now()); }
 function escapeHtml(s){ const d=document.createElement('div'); d.innerText=s; return d.innerHTML; }
 function scrollToBottom(id){ const el=document.getElementById(id); if(el) el.scrollTop = el.scrollHeight; }
 
+/* state */
 let ME_ID=null, ME_NAME=null;
 let view='home';
 let pollTimer=null;
@@ -267,6 +307,43 @@ let ventVisibility='private';
 let ventDraft='';
 let lastError=null;
 
+/* board heartbeat */
+let boardHeartbeatTimer = null;
+function startBoardHeartbeat(){
+  stopBoardHeartbeat();
+  boardHeartbeatTimer = setInterval(async ()=>{
+    if(view !== 'boardroom' || !currentRoomCode || !ME_ID) return;
+    await fSet(`rooms/${currentRoomCode}/players/${ME_ID}/lastSeen`, Date.now());
+  }, 5000);
+}
+function stopBoardHeartbeat(){
+  if(boardHeartbeatTimer){
+    clearInterval(boardHeartbeatTimer);
+    boardHeartbeatTimer = null;
+  }
+}
+
+/* board presence/active helpers */
+function getActiveBoardPlayers(room){
+  const players = room.players || {};
+  const now = Date.now();
+  const active = {};
+
+for(const [id, p] of Object.entries(players)){
+    if(!p) continue;
+    if(id === ME_ID){
+      active[id] = p;
+      continue;
+    }
+    if(!p.lastSeen) continue;
+    if(now - p.lastSeen <= 12000){
+      active[id] = p;
+    }
+  }
+  return active;
+}
+
+/* identity */
 function ensureIdentity(){
   ME_NAME = lGet('nickname');
   return new Promise((resolve)=>{
@@ -285,13 +362,16 @@ function ensureIdentity(){
   });
 }
 
+/* navigation */
 function goto(v){
   view=v;
   lastError=null;
   if(pollTimer){ clearInterval(pollTimer); pollTimer=null; }
+  if(v !== 'boardroom') stopBoardHeartbeat();
   render();
 }
 
+/* root render */
 async function render(){
   const app = document.getElementById('app');
   if(view==='home') app.innerHTML = renderHome();
@@ -304,6 +384,7 @@ async function render(){
 
 if(view==='boardroom'){
     await refreshBoardRoom(true);
+    startBoardHeartbeat();
     if(!pollTimer){
       pollTimer = setInterval(()=>{ if(view==='boardroom') refreshBoardRoom(false); }, 1600);
     }
@@ -319,6 +400,7 @@ if(view==='boardroom'){
   }
 }
 
+/* home */
 function renderHome(){
   return `
   <div class="hero">
@@ -377,7 +459,7 @@ function renderHome(){
   </div>`;
 }
 
-/* boardgame */
+/* boardgame entry */
 function renderBoardGameEntry(){
   return `
   <div class="view">
@@ -408,8 +490,13 @@ function renderBoardGameEntry(){
   </div>`;
 }
 
+/* boardgame create/join */
 async function armBoardPresence(code){
-  try{ db.ref('rooms/'+code+'/players/'+ME_ID).onDisconnect().remove(); }catch(e){ console.error(e); }
+  try{
+    db.ref('rooms/'+code+'/players/'+ME_ID).onDisconnect().remove();
+  }catch(e){
+    console.error(e);
+  }
 }
 
 async function bgQuickMatch(){
@@ -423,8 +510,16 @@ for(const code in allRooms){
     const room = allRooms[code];
     const players = room && room.players ? room.players : {};
     if(room && room.status==='waiting' && Object.keys(players).length<4 && !players[ME_ID]){
-      const ok = await fSet('rooms/'+code+'/players/'+ME_ID, {name:nick, score:0});
-      if(ok){ joined = code; await armBoardPresence(code); break; }
+      const ok = await fSet('rooms/'+code+'/players/'+ME_ID, {
+        name:nick,
+        score:0,
+        lastSeen: Date.now()
+      });
+      if(ok){
+        joined = code;
+        await armBoardPresence(code);
+        break;
+      }
     }
   }
 
@@ -433,7 +528,11 @@ if(!joined){
     const values=[]; for(let i=0;i<8;i++){values.push(i,i);}
     values.sort(()=>Math.random()-0.5);
     const cards = values.map(v=>({value:v, matchedBy:null}));
-    let ok = await fSet('rooms/'+joined+'/players/'+ME_ID, {name:nick, score:0});
+    let ok = await fSet('rooms/'+joined+'/players/'+ME_ID, {
+      name:nick,
+      score:0,
+      lastSeen: Date.now()
+    });
     ok = ok && await fSet('rooms/'+joined+'/code', joined);
     ok = ok && await fSet('rooms/'+joined+'/createdAt', Date.now());
     ok = ok && await fSet('rooms/'+joined+'/cards', cards);
@@ -467,7 +566,11 @@ const values=[]; for(let i=0;i<8;i++){values.push(i,i);}
   values.sort(()=>Math.random()-0.5);
   const cards = values.map(v=>({value:v, matchedBy:null}));
 
-let ok = await fSet('rooms/'+code+'/players/'+ME_ID, {name:nick, score:0});
+let ok = await fSet('rooms/'+code+'/players/'+ME_ID, {
+    name:nick,
+    score:0,
+    lastSeen: Date.now()
+  });
   ok = ok && await fSet('rooms/'+code+'/code', code);
   ok = ok && await fSet('rooms/'+code+'/roomName', roomName);
   ok = ok && await fSet('rooms/'+code+'/createdAt', Date.now());
@@ -493,15 +596,20 @@ const room = await fGet('rooms/'+code);
 
 const players = room.players || {};
   if(!players[ME_ID] && Object.keys(players).length<4){
-    await fSet('rooms/'+code+'/players/'+ME_ID, {name:nick, score:0});
+    await fSet('rooms/'+code+'/players/'+ME_ID, {
+      name:nick,
+      score:0,
+      lastSeen: Date.now()
+    });
     await armBoardPresence(code);
   }
   currentRoomCode = code;
   goto('boardroom');
 }
 
+/* boardgame room */
 function getBoardPlayers(room){
-  const players = room.players || {};
+  const players = getActiveBoardPlayers(room);
   const ids = Object.keys(players);
   const sorted = ids.map(id=>({id, ...players[id]})).sort((a,b)=>(b.score||0)-(a.score||0));
   return {players, ids, sorted};
@@ -642,6 +750,7 @@ if(title) title.innerHTML = `🎲 ${room.roomName ? escapeHtml(room.roomName) : 
 bindEvents();
   if(forceScroll) scrollToBottom('bg-chat-window');
 }
+
 async function bgStart(){
   if(!currentRoomCode) return;
   await fSet('rooms/'+currentRoomCode+'/status', 'playing');
@@ -708,6 +817,7 @@ input.value = '';
   refreshBoardRoom(true);
 }
 async function bgLeave(){
+  stopBoardHeartbeat();
   if(currentRoomCode){
     try{ db.ref('rooms/'+currentRoomCode+'/players/'+ME_ID).onDisconnect().cancel(); }catch(e){}
     const room = await fGet('rooms/'+currentRoomCode);
@@ -1053,6 +1163,7 @@ if(input) input.value='';
   render();
 }
 
+/* events */
 function bindEvents(){
   document.querySelectorAll('[data-action]').forEach(el=>{
     el.onclick = async () => {
@@ -1084,6 +1195,7 @@ const bgChatInput = document.getElementById('bg-chat-input');
   if(bgChatInput) bgChatInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') bgChatSend(); });
 }
 
+/* init */
 (async function init(){
   await ensureIdentity();
   render();
