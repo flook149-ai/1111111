@@ -48,46 +48,26 @@
   button{font-family:'Sarabun',sans-serif;cursor:pointer;}
   ::selection{background:var(--accent-soft);}
 
-/* ---------- Hero ---------- */
-  .hero{
-    padding:38px 24px 28px 24px;
-    text-align:center;
-    position:relative;
-    overflow:hidden;
-  }
-  .breath-wrap{
-    width:96px;height:96px;margin:0 auto 18px auto;
-    display:flex;align-items:center;justify-content:center;
-    position:relative;
-  }
+.hero{padding:38px 24px 28px 24px;text-align:center;position:relative;overflow:hidden;}
+  .breath-wrap{width:96px;height:96px;margin:0 auto 18px auto;display:flex;align-items:center;justify-content:center;position:relative;}
   .breath-ring{
-    position:absolute;inset:0;
-    border-radius:50%;
+    position:absolute;inset:0;border-radius:50%;
     background:radial-gradient(circle at 35% 30%, #ffffff, var(--accent) 60%, var(--primary) 100%);
     animation:breathe 5s ease-in-out infinite;
     box-shadow:0 10px 30px rgba(74,111,165,0.35);
   }
-  @keyframes breathe{
-    0%,100%{transform:scale(0.86);opacity:0.85;}
-    50%{transform:scale(1.08);opacity:1;}
-  }
-  @media (prefers-reduced-motion: reduce){
-    .breath-ring{animation:none;}
-  }
+  @keyframes breathe{0%,100%{transform:scale(0.86);opacity:0.85;}50%{transform:scale(1.08);opacity:1;}}
+  @media (prefers-reduced-motion: reduce){.breath-ring{animation:none;}}
   .hero h1{font-size:28px;font-weight:700;color:var(--primary-dark);margin:0 0 6px 0;letter-spacing:0.5px;}
   .hero p{margin:0;color:var(--muted);font-size:14.5px;}
 
-/* ---------- Section ---------- */
-  .section{padding:6px 20px 0 20px;}
+.section{padding:6px 20px 0 20px;}
   .eyebrow{
-    font-family:'Prompt',sans-serif;
-    font-size:12.5px;font-weight:600;letter-spacing:1.6px;
-    color:var(--primary);text-transform:uppercase;
-    margin:22px 4px 12px 4px;
+    font-family:'Prompt',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:1.6px;
+    color:var(--primary);text-transform:uppercase;margin:22px 4px 12px 4px;
   }
 
-/* ---------- Cards ---------- */
-  .card-list{display:flex;flex-direction:column;gap:10px;}
+.card-list{display:flex;flex-direction:column;gap:10px;}
   .item-card{
     background:var(--surface);
     border:1px solid var(--border);
@@ -110,8 +90,7 @@
   .item-desc{font-size:12.8px;color:var(--muted);margin:0;line-height:1.4;}
   .item-chevron{color:var(--accent);font-size:18px;flex-shrink:0;}
 
-/* ---------- Generic view ---------- */
-  .view{padding:18px 20px 8px 20px;}
+.view{padding:18px 20px 8px 20px;}
   .back-btn{
     display:inline-flex;align-items:center;gap:6px;
     background:none;border:none;color:var(--primary);
@@ -149,8 +128,7 @@
   .muted-note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;}
   .error-note{font-size:12.5px;color:var(--danger);margin-top:10px;line-height:1.5;}
 
-/* players / lobby */
-  .player-pill{
+.player-pill{
     display:inline-flex;align-items:center;gap:6px;
     background:var(--accent-soft);color:var(--primary-dark);
     border-radius:999px;padding:6px 12px;font-size:13px;font-weight:500;margin:3px 4px 3px 0;
@@ -160,8 +138,7 @@
     color:var(--primary-dark);text-align:center;margin:6px 0 14px 0;
   }
 
-/* board game grid */
-  .board-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.board-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
   .board-card{
     aspect-ratio:1/1;border-radius:10px;
     display:flex;align-items:center;justify-content:center;
@@ -178,8 +155,7 @@
   }
   .score-chip.me{border-color:var(--primary);color:var(--primary-dark);font-weight:600;}
 
-/* chat */
-  .chat-window{
+.chat-window{
     height:340px;overflow-y:auto;background:var(--surface-soft);
     border-radius:var(--radius-md);padding:14px;margin-bottom:12px;
     display:flex;flex-direction:column;gap:8px;
@@ -189,8 +165,7 @@
   .msg.them{align-self:flex-start;background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;}
   .msg.sys{align-self:center;background:transparent;color:var(--muted);font-size:12px;}
 
-/* vent */
-  textarea.input{resize:vertical;min-height:120px;font-family:'Sarabun',sans-serif;line-height:1.6;}
+textarea.input{resize:vertical;min-height:120px;font-family:'Sarabun',sans-serif;line-height:1.6;}
   .entry{
     background:var(--surface-soft);border:1px solid var(--border);border-radius:var(--radius-md);
     padding:13px 15px;margin-bottom:10px;
@@ -238,7 +213,6 @@
 <body>
 <div id="app"></div>
 
-<!-- Firebase (Realtime Database) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -257,43 +231,10 @@ const db = firebase.database();
 </script>
 
 <script>
-/* ============ shared (Firebase) storage helpers ============ */
-async function fGet(path){ 
-  try{ 
-    const snap = await db.ref(path).get(); 
-    return snap.exists() ? snap.val() : null; 
-  }catch(e){ 
-    console.error('firebase get', path, e); 
-    return null; 
-  } 
-}
-async function fSet(path, value){ 
-  try{ 
-    await db.ref(path).set(value); 
-    return true; 
-  }catch(e){ 
-    console.error('firebase set', path, e); 
-    return false; 
-  } 
-}
-async function fDel(path){ 
-  try{ 
-    await db.ref(path).remove(); 
-    return true; 
-  }catch(e){ 
-    console.error('firebase del', path, e); 
-    return false; 
-  } 
-}
-async function fPush(path, value){ 
-  try{ 
-    await db.ref(path).push(value); 
-    return true; 
-  }catch(e){ 
-    console.error('firebase push', path, e); 
-    return false; 
-  } 
-}
+async function fGet(path){ try{ const snap = await db.ref(path).get(); return snap.exists() ? snap.val() : null; }catch(e){ console.error('firebase get', path, e); return null; } }
+async function fSet(path, value){ try{ await db.ref(path).set(value); return true; }catch(e){ console.error('firebase set', path, e); return false; } }
+async function fDel(path){ try{ await db.ref(path).remove(); return true; }catch(e){ console.error('firebase del', path, e); return false; } }
+async function fPush(path, value){ try{ await db.ref(path).push(value); return true; }catch(e){ console.error('firebase push', path, e); return false; } }
 async function fPushReturnKey(path, value){
   try{
     const ref = db.ref(path).push();
@@ -304,49 +245,25 @@ async function fPushReturnKey(path, value){
     return null;
   }
 }
-async function fIncrementScore(path){ 
-  try{ 
-    await db.ref(path).transaction(cur => (cur||0)+1); 
-  }catch(e){ 
-    console.error('firebase txn', path, e); 
-  } 
-}
-function armDisconnectRemove(path){
-  try{
-    db.ref(path).onDisconnect().remove();
-  }catch(e){
-    console.error('armDisconnectRemove', path, e);
-  }
-}
-function cancelDisconnectRemove(path){
-  try{
-    db.ref(path).onDisconnect().cancel();
-  }catch(e){
-    console.error('cancelDisconnectRemove', path, e);
-  }
-}
+async function fIncrementScore(path){ try{ await db.ref(path).transaction(cur => (cur||0)+1); }catch(e){ console.error('firebase txn', path, e); } }
 
-/* ============ personal (localStorage) storage helpers ============ */
 function lGet(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
 function lSet(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
 
 function uid(){ return Math.random().toString(36).slice(2,10); }
 function roomCode(){ const s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c=''; for(let i=0;i<4;i++) c+=s[Math.floor(Math.random()*s.length)]; return c; }
-function formatTime(ts){
-  return new Date(ts).toLocaleString('th-TH',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-}
+function formatTime(ts){ return new Date(ts).toLocaleString('th-TH',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
 function nowStr(){ return formatTime(Date.now()); }
 function escapeHtml(s){ const d=document.createElement('div'); d.innerText=s; return d.innerHTML; }
-function scrollToBottom(id){ const el = document.getElementById(id); if(el) el.scrollTop = el.scrollHeight; }
+function scrollToBottom(id){ const el=document.getElementById(id); if(el) el.scrollTop = el.scrollHeight; }
 
-/* ============ app state ============ */
 let ME_ID=null, ME_NAME=null;
 let view='home';
 let pollTimer=null;
 let currentRoomCode=null;
 let currentChatCode=null;
-let ventView='compose';        // compose | history | public
-let ventVisibility='private';   // private | public
+let ventView='compose';
+let ventVisibility='private';
 let ventDraft='';
 let lastError=null;
 
@@ -368,7 +285,6 @@ function ensureIdentity(){
   });
 }
 
-/* ============ view helpers ============ */
 function goto(v){
   view=v;
   lastError=null;
@@ -376,18 +292,15 @@ function goto(v){
   render();
 }
 
-/* ============ render root ============ */
 async function render(){
   const app = document.getElementById('app');
-
-if(view==='home') app.innerHTML = renderHome();
+  if(view==='home') app.innerHTML = renderHome();
   else if(view==='boardgame') app.innerHTML = renderBoardGameEntry();
   else if(view==='boardroom') app.innerHTML = await renderBoardRoom();
   else if(view==='chat') app.innerHTML = await renderChatEntry();
   else if(view==='chatroom') app.innerHTML = await renderChatRoom();
   else if(view==='vent') app.innerHTML = await renderVent();
-
-bindEvents();
+  bindEvents();
 
 if(view==='boardroom'){
     await refreshBoardRoom(true);
@@ -406,7 +319,6 @@ if(view==='boardroom'){
   }
 }
 
-/* ============ HOME ============ */
 function renderHome(){
   return `
   <div class="hero">
@@ -465,8 +377,8 @@ function renderHome(){
   </div>`;
 }
 
-/* ============ BOARD GAME: lobby entry ============ */
-async function renderBoardGameEntry(){
+/* boardgame */
+function renderBoardGameEntry(){
   return `
   <div class="view">
     <button class="back-btn" data-action="nav" data-view="home">← กลับหน้าหลัก</button>
@@ -497,7 +409,7 @@ async function renderBoardGameEntry(){
 }
 
 async function armBoardPresence(code){
-  armDisconnectRemove('rooms/'+code+'/players/'+ME_ID);
+  try{ db.ref('rooms/'+code+'/players/'+ME_ID).onDisconnect().remove(); }catch(e){ console.error(e); }
 }
 
 async function bgQuickMatch(){
@@ -512,11 +424,7 @@ for(const code in allRooms){
     const players = room && room.players ? room.players : {};
     if(room && room.status==='waiting' && Object.keys(players).length<4 && !players[ME_ID]){
       const ok = await fSet('rooms/'+code+'/players/'+ME_ID, {name:nick, score:0});
-      if(ok){
-        joined = code;
-        await armBoardPresence(code);
-        break;
-      }
+      if(ok){ joined = code; await armBoardPresence(code); break; }
     }
   }
 
@@ -592,7 +500,6 @@ const players = room.players || {};
   goto('boardroom');
 }
 
-/* ============ BOARD GAME: room helpers ============ */
 function getBoardPlayers(room){
   const players = room.players || {};
   const ids = Object.keys(players);
@@ -703,20 +610,15 @@ function buildBoardRoomShell(room){
     ${room.status==='playing' ? `<p class="muted-note" id="board-note">แตะการ์ดเพื่อเปิด จับคู่สัญลักษณ์ให้ตรงกันเพื่อได้คะแนน</p>` : ``}
   </div>`;
 }
-
 async function renderBoardRoom(){
   const room = await fGet('rooms/'+currentRoomCode);
   if(!room) return `<div class="view"><button class="back-btn" data-action="nav" data-view="boardgame">← กลับ</button><p class="empty-note">ห้องนี้ถูกปิดไปแล้ว</p></div>`;
   return buildBoardRoomShell(room);
 }
-
 async function refreshBoardRoom(forceScroll){
   if(view!=='boardroom') return;
   const room = await fGet('rooms/'+currentRoomCode);
   if(!room){ goto('boardgame'); return; }
-
-const root = document.getElementById('boardroom-root');
-  if(!root) return;
 
 const title = document.getElementById('boardroom-title');
   const winnerPanel = document.getElementById('board-winner-panel');
@@ -738,17 +640,14 @@ if(title) title.innerHTML = `🎲 ${room.roomName ? escapeHtml(room.roomName) : 
   }
 
 bindEvents();
-
-if(forceScroll) scrollToBottom('bg-chat-window');
+  if(forceScroll) scrollToBottom('bg-chat-window');
 }
-
 async function bgStart(){
   if(!currentRoomCode) return;
   await fSet('rooms/'+currentRoomCode+'/status', 'playing');
   await fSet('rooms/'+currentRoomCode+'/chatMessages', (await fGet('rooms/'+currentRoomCode+'/chatMessages')) || {});
   refreshBoardRoom(true);
 }
-
 async function bgFlip(idx){
   const room = await fGet('rooms/'+currentRoomCode);
   if(!room || room.status!=='playing') return;
@@ -792,7 +691,6 @@ const openIdx = Object.keys(flipped).map(Number);
     }
   }
 }
-
 async function bgChatSend(){
   const input = document.getElementById('bg-chat-input');
   if(!input) return;
@@ -809,10 +707,9 @@ await fPush('rooms/'+currentRoomCode+'/chatMessages', {
 input.value = '';
   refreshBoardRoom(true);
 }
-
 async function bgLeave(){
   if(currentRoomCode){
-    cancelDisconnectRemove('rooms/'+currentRoomCode+'/players/'+ME_ID);
+    try{ db.ref('rooms/'+currentRoomCode+'/players/'+ME_ID).onDisconnect().cancel(); }catch(e){}
     const room = await fGet('rooms/'+currentRoomCode);
     if(room){
       await fDel('rooms/'+currentRoomCode+'/players/'+ME_ID);
@@ -826,7 +723,7 @@ async function bgLeave(){
   goto('boardgame');
 }
 
-/* ============ CHAT: entry / matching ============ */
+/* chat */
 async function renderChatEntry(){
   const w = await fGet('chatwait/'+ME_ID);
   if(w){
@@ -863,11 +760,9 @@ async function renderChatEntry(){
     </div>
   </div>`;
 }
-
 async function armChatPresence(code){
-  armDisconnectRemove('chatrooms/'+code+'/players/'+ME_ID);
+  try{ db.ref('chatrooms/'+code+'/players/'+ME_ID).onDisconnect().remove(); }catch(e){ console.error(e); }
 }
-
 async function chatFind(){
   const nick = document.getElementById('chat-nick-input').value.trim() || 'เพื่อนนิรนาม';
   ME_NAME = nick; lSet('nickname', nick);
@@ -892,18 +787,15 @@ if(partnerData){
     goto('chatroom');
   } else {
     await fSet('chatwait/'+ME_ID, {name:nick, status:'waiting', roomCode:null});
-    armDisconnectRemove('chatwait/'+ME_ID);
+    try{ db.ref('chatwait/'+ME_ID).onDisconnect().remove(); }catch(e){}
     render();
   }
 }
-
 async function chatCancel(){
-  cancelDisconnectRemove('chatwait/'+ME_ID);
+  try{ db.ref('chatwait/'+ME_ID).onDisconnect().cancel(); }catch(e){}
   await fDel('chatwait/'+ME_ID);
   goto('home');
 }
-
-/* ============ CHAT: room ============ */
 function getChatMessages(room){
   const raw = room.messages || {};
   return Object.values(raw).sort((a,b)=>(a.time||0)-(b.time||0));
@@ -930,20 +822,15 @@ return `
     </div>
   </div>`;
 }
-
 async function renderChatRoom(){
   const room = await fGet('chatrooms/'+currentChatCode);
   if(!room) return `<div class="view"><button class="back-btn" data-action="nav" data-view="home">← กลับหน้าหลัก</button><p class="empty-note">บทสนทนานี้สิ้นสุดแล้ว</p></div>`;
   return buildChatRoomShell(room);
 }
-
 async function refreshChatRoom(forceScroll){
   if(view!=='chatroom') return;
   const room = await fGet('chatrooms/'+currentChatCode);
   if(!room){ goto('home'); return; }
-
-const root = document.getElementById('chatroom-root');
-  if(!root) return;
 
 const players = room.players || {};
   const partnerId = Object.keys(players).find(id=>id!==ME_ID);
@@ -952,8 +839,7 @@ const players = room.players || {};
 
 const title = document.getElementById('chatroom-title');
   const windowEl = document.getElementById('chat-window');
-
-if(title) title.innerHTML = `💬 คุยกับ ${escapeHtml(partnerName)}`;
+  if(title) title.innerHTML = `💬 คุยกับ ${escapeHtml(partnerName)}`;
   if(windowEl){
     windowEl.innerHTML = messages.map(m=>{
       if(m.sender==='sys') return `<div class="msg sys">${escapeHtml(m.text)}</div>`;
@@ -962,10 +848,8 @@ if(title) title.innerHTML = `💬 คุยกับ ${escapeHtml(partnerName)}`
   }
 
 bindEvents();
-
-if(forceScroll) scrollToBottom('chat-window');
+  if(forceScroll) scrollToBottom('chat-window');
 }
-
 async function chatSend(){
   const input = document.getElementById('chat-msg-input');
   const text = input ? input.value.trim() : '';
@@ -974,10 +858,9 @@ async function chatSend(){
   if(input) input.value='';
   refreshChatRoom(true);
 }
-
 async function chatLeave(){
   if(currentChatCode){
-    cancelDisconnectRemove('chatrooms/'+currentChatCode+'/players/'+ME_ID);
+    try{ db.ref('chatrooms/'+currentChatCode+'/players/'+ME_ID).onDisconnect().cancel(); }catch(e){}
     const room = await fGet('chatrooms/'+currentChatCode);
     if(room){
       await fDel('chatrooms/'+currentChatCode+'/players/'+ME_ID);
@@ -991,7 +874,7 @@ async function chatLeave(){
   goto('home');
 }
 
-/* ============ VENT SPACE (private + public) ============ */
+/* vent */
 function ventCaptureDraft(){
   const ta = document.getElementById('vent-text');
   if(ta) ventDraft = ta.value;
@@ -1005,7 +888,6 @@ function ventSetVisibility(mode){
   ventVisibility = mode;
   render();
 }
-
 function buildVentTabs(){
   return `
     <div class="tabs">
@@ -1015,7 +897,6 @@ function buildVentTabs(){
     </div>
   `;
 }
-
 function renderVentCompose(){
   return `
     <div class="panel">
@@ -1034,7 +915,6 @@ function renderVentCompose(){
     </div>
   `;
 }
-
 function renderVentHistory(entries){
   if(entries.length===0) return `<p class="empty-note">ยังไม่มีข้อความที่บันทึกไว้</p>`;
   return entries.map(e=>`
@@ -1045,7 +925,6 @@ function renderVentHistory(entries){
     </div>
   `).join('');
 }
-
 function renderPublicCommentList(comments){
   if(!comments || comments.length===0) return `<div class="mini-note">ยังไม่มีคอมเมนต์</div>`;
   return `
@@ -1059,12 +938,10 @@ function renderPublicCommentList(comments){
     </div>
   `;
 }
-
 async function getPublicPosts(){
   const raw = await fGet('vent_public_posts') || {};
   return Object.keys(raw).map(id=>({id, ...raw[id]})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
 }
-
 function renderPublicPost(post){
   const comments = Object.values(post.comments || {}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
   return `
@@ -1089,13 +966,11 @@ ${renderPublicCommentList(comments)}
     </div>
   `;
 }
-
 async function renderVentPublicFeed(){
   const posts = await getPublicPosts();
   if(posts.length===0) return `<p class="empty-note">ยังไม่มีข้อความสาธารณะ</p>`;
   return posts.map(renderPublicPost).join('');
 }
-
 async function renderVent(){
   const raw = lGet('vent_entries');
   let entries = [];
@@ -1125,7 +1000,6 @@ ${ventView==='public' ? `
     ` : ''}
   </div>`;
 }
-
 async function ventSave(){
   const ta = document.getElementById('vent-text');
   const text = ta ? ta.value.trim() : '';
@@ -1162,7 +1036,6 @@ ventDraft = '';
   if(ta) ta.value = '';
   render();
 }
-
 async function ventAddComment(postId){
   const input = document.getElementById('comment-input-'+postId);
   const text = input ? input.value.trim() : '';
@@ -1180,7 +1053,6 @@ if(input) input.value='';
   render();
 }
 
-/* ============ event binding ============ */
 function bindEvents(){
   document.querySelectorAll('[data-action]').forEach(el=>{
     el.onclick = async () => {
@@ -1212,7 +1084,6 @@ const bgChatInput = document.getElementById('bg-chat-input');
   if(bgChatInput) bgChatInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') bgChatSend(); });
 }
 
-/* ============ init ============ */
 (async function init(){
   await ensureIdentity();
   render();
