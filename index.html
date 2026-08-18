@@ -313,6 +313,7 @@ let currentChatCode=null;
 let lastError=null;
 let chatDraft='';
 let chatFocusDone=false;
+let boardPairTimeout = null;
 
 /* Board game state */
 const BOARD_PAIR_COUNT = 24;
@@ -363,6 +364,7 @@ function goto(v){
   view=v;
   lastError=null;
   if(pollTimer){ clearInterval(pollTimer); pollTimer=null; }
+  if(boardPairTimeout){ clearTimeout(boardPairTimeout); boardPairTimeout=null; }
   if(v === 'chatroom') chatFocusDone = false;
   if(v === 'vent') { ventMode = 'compose'; ventReadingId = null; }
   render();
@@ -857,9 +859,9 @@ if(cards[a].value === cards[b].value){
       await fDel('rooms/'+currentRoomCode+'/pairLockBy');
       await fSet('rooms/'+currentRoomCode+'/turnId', ME_ID);
     } else {
-      setTimeout(async ()=>{
+      boardPairTimeout = setTimeout(async ()=>{
         const room2 = await fGet('rooms/'+currentRoomCode);
-        if(!room2) return;
+        if(!room2 || room2.status !== 'playing') return;
 
 const flipped2 = room2.flipped || {};
         const keys2 = Object.keys(flipped2).map(Number);
@@ -871,11 +873,14 @@ await fDel('rooms/'+currentRoomCode+'/pairLockBy');
 
 const players2 = room2.players || {};
         const ids = Object.keys(players2);
-        const currentIndex = ids.indexOf(ME_ID);
+        if(!ids.length) return;
+
+const currentIndex = ids.indexOf(ME_ID);
         const nextId = ids[(currentIndex + 1) % ids.length];
         await fSet('rooms/'+currentRoomCode+'/turnId', nextId);
 
 if(view === 'boardroom') await refreshBoardRoom();
+        boardPairTimeout = null;
       }, 1100);
     }
   }
@@ -911,6 +916,11 @@ if(turnWasMe){
         await fSet('rooms/'+currentRoomCode+'/flipped', {});
       }
     }
+  }
+
+if(boardPairTimeout){
+    clearTimeout(boardPairTimeout);
+    boardPairTimeout = null;
   }
 
 currentRoomCode = null;
@@ -988,7 +998,7 @@ const partnerId = Object.keys(room.players || {}).find(id=>id!==ME_ID);
   const partnerName = partnerId ? room.players[partnerId].name : 'เพื่อน';
   const titleEl = document.getElementById('chat-title');
   if(titleEl){
-    titleEl.textContent = `💬 คุยกับ ${escapeHtml(partnerName)}`;
+    titleEl.textContent = `💬 คุยกับ ${partnerName}`;
   }
 }
 
@@ -1015,8 +1025,8 @@ if(w){
       currentChatCode = w.roomCode;
       chatDraft = '';
       chatFocusDone = false;
-      goto('chatroom');
-      return renderChatRoom();
+      view = 'chatroom';
+      return await renderChatRoom();
     }
 
 if(w.status === 'waiting'){
@@ -1425,7 +1435,7 @@ function bindEvents(){
   document.querySelectorAll('[data-action]').forEach(el=>{
     el.onclick = async ()=>{
       const action = el.getAttribute('data-action');
-      if(action==='ext') window.open(el.getAttribute('data-url'), '_blank');
+      if(action==='ext') window.open(el.getAttribute('data-url'), '_blank', 'noopener,noreferrer');
       else if(action==='nav') goto(el.getAttribute('data-view'));
       else if(action==='board-quickmatch') bgQuickMatch();
       else if(action==='board-createroom') bgCreateRoom();
