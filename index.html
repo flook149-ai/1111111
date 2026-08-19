@@ -350,17 +350,17 @@ function getActiveBoardPlayers(room){
 function ensureIdentity(){
   ME_NAME = lGet('nickname');
   return new Promise((resolve)=>{
-    firebase.auth().onAuthStateChanged((user)=>{
+    const unsub = firebase.auth().onAuthStateChanged((user)=>{
       if(user){
         ME_ID = user.uid;
+        unsub();
         resolve();
-      } else {
-        firebase.auth().signInAnonymously().catch((e)=>{
-          console.error('anonymous sign-in failed', e);
-          lastError = 'เชื่อมต่อระบบยืนยันตัวตนไม่สำเร็จ ลองรีเฟรชหน้าเว็บ';
-          resolve();
-        });
       }
+    });
+    firebase.auth().signInAnonymously().catch((e)=>{
+      console.error('anonymous sign-in failed', e);
+      lastError = 'เชื่อมต่อระบบยืนยันตัวตนไม่สำเร็จ ลองรีเฟรชหน้าเว็บ';
+      resolve();
     });
   });
 }
@@ -496,7 +496,6 @@ function renderBoardGameEntry(){
   </div>`;
 }
 
-/* boardgame create/join */
 async function armBoardPresence(code){
   try{
     db.ref('rooms/'+code+'/players/'+ME_ID).onDisconnect().remove();
@@ -1135,6 +1134,12 @@ function renderPublicPost(post){
       </div>
       <div class="entry-text">${escapeHtml(post.text || '')}</div>
 
+${post.authorId === ME_ID ? `
+        <button class="btn btn-outline" style="margin-top:10px;" data-action="vent-delete-post" data-post-id="${post.id}">
+          ลบโพสต์
+        </button>
+      ` : ``}
+
 ${renderPublicCommentList(comments)}
 
 <div class="row" style="margin-top:10px;">
@@ -1189,6 +1194,12 @@ async function ventSave(){
   const text = ta ? ta.value.trim() : '';
   if(!text) return;
 
+if(!ME_ID){
+    lastError = 'กำลังเชื่อมต่อระบบยืนยันตัวตน กรุณารอสักครู่แล้วลองใหม่';
+    render();
+    return;
+  }
+
 const raw = lGet('vent_entries');
   let entries = [];
   if(raw){
@@ -1232,6 +1243,17 @@ ventDraft = '';
   if(ta) ta.value = '';
   render();
 }
+async function ventDeletePost(postId){
+  if(!postId) return;
+  if(!ME_ID){
+    lastError = 'กำลังเชื่อมต่อระบบยืนยันตัวตน กรุณารอสักครู่';
+    render();
+    return;
+  }
+  await fDel('vent_public_posts/' + postId);
+  await loadVentPublicPostsCache();
+  render();
+}
 async function ventAddComment(postId){
   const input = document.getElementById('comment-input-'+postId);
   const text = input ? input.value.trim() : '';
@@ -1268,6 +1290,7 @@ function bindEvents(){
       else if(action === 'chat-send') chatSend();
       else if(action === 'chat-leave') chatLeave();
       else if(action === 'vent-save') ventSave();
+      else if(action === 'vent-delete-post') ventDeletePost(el.getAttribute('data-post-id'));
       else if(action === 'vent-set-view') ventSetView(el.getAttribute('data-view'));
       else if(action === 'vent-set-visibility') ventSetVisibility(el.getAttribute('data-visibility'));
       else if(action === 'vent-comment-send') ventAddComment(el.getAttribute('data-post-id'));
