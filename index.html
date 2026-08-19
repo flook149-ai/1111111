@@ -216,6 +216,7 @@ textarea.input{resize:vertical;min-height:120px;font-family:'Sarabun',sans-serif
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDLyigr0Vp2TUT4P_vqN3L27s8EfRLwknM",
@@ -226,11 +227,10 @@ const firebaseConfig = {
   messagingSenderId: "19469094184",
   appId: "1:19469094184:web:e8e2009f95234a7ff4141d"
 };
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-</script>
 
-<script>
 /* storage helpers */
 async function fGet(path){
   try{
@@ -280,7 +280,7 @@ async function fPushReturnKey(path, value){
 }
 async function fIncrementScore(path){
   try{
-    await db.ref(path).transaction(cur => (cur||0)+1);
+    await db.ref(path).transaction(cur => (cur || 0) + 1);
   }catch(e){
     console.error('firebase txn', path, e);
   }
@@ -290,22 +290,26 @@ function lGet(key){ try{ return localStorage.getItem(key); }catch(e){ return nul
 function lSet(key, value){ try{ localStorage.setItem(key, value); }catch(e){} }
 
 function uid(){ return Math.random().toString(36).slice(2,10); }
-function roomCode(){ const s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c=''; for(let i=0;i<4;i++) c+=s[Math.floor(Math.random()*s.length)]; return c; }
+function roomCode(){ const s='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c=''; for(let i=0;i<4;i++) c += s[Math.floor(Math.random()*s.length)]; return c; }
 function formatTime(ts){ return new Date(ts).toLocaleString('th-TH',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
 function nowStr(){ return formatTime(Date.now()); }
 function escapeHtml(s){ const d=document.createElement('div'); d.innerText=s; return d.innerHTML; }
 function scrollToBottom(id){ const el=document.getElementById(id); if(el) el.scrollTop = el.scrollHeight; }
 
 /* state */
-let ME_ID=null, ME_NAME=null;
-let view='home';
-let pollTimer=null;
-let currentRoomCode=null;
-let currentChatCode=null;
-let ventView='compose';
-let ventVisibility='private';
-let ventDraft='';
-let lastError=null;
+let ME_ID = null, ME_NAME = null;
+let view = 'home';
+let pollTimer = null;
+let currentRoomCode = null;
+let currentChatCode = null;
+let ventView = 'compose';
+let ventVisibility = 'private';
+let ventDraft = '';
+let lastError = null;
+
+/* vent public feed cache/listener */
+let ventPublicPostsCache = [];
+let ventPublicListenerStarted = false;
 
 /* board heartbeat */
 let boardHeartbeatTimer = null;
@@ -328,8 +332,7 @@ function getActiveBoardPlayers(room){
   const players = room.players || {};
   const now = Date.now();
   const active = {};
-
-for(const [id, p] of Object.entries(players)){
+  for(const [id, p] of Object.entries(players)){
     if(!p) continue;
     if(id === ME_ID){
       active[id] = p;
@@ -364,39 +367,42 @@ function ensureIdentity(){
 
 /* navigation */
 function goto(v){
-  view=v;
-  lastError=null;
-  if(pollTimer){ clearInterval(pollTimer); pollTimer=null; }
+  view = v;
+  lastError = null;
+  if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
   if(v !== 'boardroom') stopBoardHeartbeat();
+  if(v !== 'vent') stopVentPublicFeedListener();
   render();
 }
 
 /* root render */
 async function render(){
   const app = document.getElementById('app');
-  if(view==='home') app.innerHTML = renderHome();
-  else if(view==='boardgame') app.innerHTML = renderBoardGameEntry();
-  else if(view==='boardroom') app.innerHTML = await renderBoardRoom();
-  else if(view==='chat') app.innerHTML = await renderChatEntry();
-  else if(view==='chatroom') app.innerHTML = await renderChatRoom();
-  else if(view==='vent') app.innerHTML = await renderVent();
+  if(view === 'home') app.innerHTML = renderHome();
+  else if(view === 'boardgame') app.innerHTML = renderBoardGameEntry();
+  else if(view === 'boardroom') app.innerHTML = await renderBoardRoom();
+  else if(view === 'chat') app.innerHTML = await renderChatEntry();
+  else if(view === 'chatroom') app.innerHTML = await renderChatRoom();
+  else if(view === 'vent') app.innerHTML = await renderVent();
   bindEvents();
 
-if(view==='boardroom'){
+if(view === 'boardroom'){
     await refreshBoardRoom(true);
     startBoardHeartbeat();
     if(!pollTimer){
-      pollTimer = setInterval(()=>{ if(view==='boardroom') refreshBoardRoom(false); }, 1600);
+      pollTimer = setInterval(()=>{ if(view === 'boardroom') refreshBoardRoom(false); }, 1600);
     }
-  } else if(view==='chatroom'){
+  } else if(view === 'chatroom'){
     await refreshChatRoom(true);
     setTimeout(()=>{
       const input = document.getElementById('chat-msg-input');
       if(input) input.focus();
     }, 50);
     if(!pollTimer){
-      pollTimer = setInterval(()=>{ if(view==='chatroom') refreshChatRoom(false); }, 1200);
+      pollTimer = setInterval(()=>{ if(view === 'chatroom') refreshChatRoom(false); }, 1200);
     }
+  } else if(view === 'vent' && ventView === 'public'){
+    startVentPublicFeedListener();
   }
 }
 
@@ -504,15 +510,15 @@ async function bgQuickMatch(){
   ME_NAME = nick; lSet('nickname', nick);
 
 const allRooms = await fGet('rooms') || {};
-  let joined=null;
+  let joined = null;
 
 for(const code in allRooms){
     const room = allRooms[code];
     const players = room && room.players ? room.players : {};
-    if(room && room.status==='waiting' && Object.keys(players).length<4 && !players[ME_ID]){
+    if(room && room.status === 'waiting' && Object.keys(players).length < 4 && !players[ME_ID]){
       const ok = await fSet('rooms/'+code+'/players/'+ME_ID, {
-        name:nick,
-        score:0,
+        name: nick,
+        score: 0,
         lastSeen: Date.now()
       });
       if(ok){
@@ -525,12 +531,13 @@ for(const code in allRooms){
 
 if(!joined){
     joined = roomCode();
-    const values=[]; for(let i=0;i<8;i++){values.push(i,i);}
+    const values = [];
+    for(let i=0;i<8;i++){ values.push(i,i); }
     values.sort(()=>Math.random()-0.5);
     const cards = values.map(v=>({value:v, matchedBy:null}));
     let ok = await fSet('rooms/'+joined+'/players/'+ME_ID, {
-      name:nick,
-      score:0,
+      name: nick,
+      score: 0,
       lastSeen: Date.now()
     });
     ok = ok && await fSet('rooms/'+joined+'/code', joined);
@@ -560,15 +567,16 @@ if(code){
   } else {
     code = roomCode();
   }
-  const roomName = roomNameInput || ('ห้องของ '+nick);
 
-const values=[]; for(let i=0;i<8;i++){values.push(i,i);}
+const roomName = roomNameInput || ('ห้องของ '+nick);
+  const values = [];
+  for(let i=0;i<8;i++){ values.push(i,i); }
   values.sort(()=>Math.random()-0.5);
   const cards = values.map(v=>({value:v, matchedBy:null}));
 
 let ok = await fSet('rooms/'+code+'/players/'+ME_ID, {
-    name:nick,
-    score:0,
+    name: nick,
+    score: 0,
     lastSeen: Date.now()
   });
   ok = ok && await fSet('rooms/'+code+'/code', code);
@@ -595,10 +603,10 @@ const room = await fGet('rooms/'+code);
   if(!room){ lastError='ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง'; render(); return; }
 
 const players = room.players || {};
-  if(!players[ME_ID] && Object.keys(players).length<4){
+  if(!players[ME_ID] && Object.keys(players).length < 4){
     await fSet('rooms/'+code+'/players/'+ME_ID, {
-      name:nick,
-      score:0,
+      name: nick,
+      score: 0,
       lastSeen: Date.now()
     });
     await armBoardPresence(code);
@@ -620,7 +628,7 @@ function getBoardMessages(room){
 }
 function buildBoardScoreStrip(room){
   const {players, ids} = getBoardPlayers(room);
-  if(room.status!=='playing') return '';
+  if(room.status !== 'playing') return '';
   return `
     <div class="score-strip">
       ${ids.map(id=>`<span class="score-chip ${id===ME_ID?'me':''}">${escapeHtml(players[id].name)}: ${players[id].score||0}★</span>`).join('')}
@@ -629,8 +637,7 @@ function buildBoardScoreStrip(room){
 }
 function buildBoardStatusPanel(room){
   const {players, ids} = getBoardPlayers(room);
-
-if(room.status==='waiting'){
+  if(room.status === 'waiting'){
     return `
       <div class="panel">
         <div class="room-code">${escapeHtml(room.code || currentRoomCode || '')}</div>
@@ -643,8 +650,7 @@ if(room.status==='waiting'){
       </div>
     `;
   }
-
-return `
+  return `
     <div class="panel">
       <p class="view-sub" style="margin:0;">กำลังเล่นอยู่ · ผู้เล่น ${ids.length} คน</p>
     </div>
@@ -652,7 +658,7 @@ return `
 }
 function buildBoardWinnerPanel(room){
   const cards = room.cards || [];
-  const allMatched = cards.length>0 && cards.every(c=>c.matchedBy);
+  const allMatched = cards.length > 0 && cards.every(c=>c.matchedBy);
   if(!allMatched) return '';
   const {sorted} = getBoardPlayers(room);
   const topScore = Math.max(...sorted.map(p=>p.score||0), 0);
@@ -666,21 +672,33 @@ function buildBoardWinnerPanel(room){
   `;
 }
 function buildBoardGrid(room){
-  if(room.status!=='playing') return '';
+  if(room.status !== 'playing') return '';
   const cards = room.cards || [];
   const flipped = room.flipped || {};
-  const symbols=['🌤️','🌊','🌿','🍃','🌙','⭐','🌸','🍀'];
+  const symbols = ['🌤️','🌊','🌿','🍃','🌙','⭐','🌸','🍀'];
 
 return cards.map((c,i)=>{
     const isFlipped = !!flipped[i];
     const open = c.matchedBy || isFlipped;
-    const cls = c.matchedBy ? 'matched' : (isFlipped ? 'open':'');
+    const cls = c.matchedBy ? 'matched' : (isFlipped ? 'open' : '');
     return `<button class="board-card ${cls}" data-action="bg-flip" data-idx="${i}">${open?symbols[c.value]:''}</button>`;
   }).join('');
 }
-function buildBoardChatPanel(room){
-  if(room.status!=='playing') return '';
+
+/* board chat */
+function buildBoardChatMessages(room){
   const messages = getBoardMessages(room);
+  return messages.length === 0
+    ? `<div class="msg sys">ยังไม่มีข้อความในห้องนี้</div>`
+    : messages.map(m=>{
+        if(m.senderId === 'sys') return `<div class="msg sys">${escapeHtml(m.text)}</div>`;
+        const isMe = m.senderId === ME_ID;
+        const name = m.senderName || (isMe ? (ME_NAME || 'คุณ') : 'เพื่อน');
+        return `<div class="msg ${isMe?'me':'them'}"><div style="font-size:11px;opacity:.8;margin-bottom:4px;">${escapeHtml(name)}</div>${escapeHtml(m.text)}</div>`;
+      }).join('');
+}
+function buildBoardChatPanel(room){
+  if(room.status !== 'playing') return '';
   return `
     <div class="panel">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;">
@@ -688,15 +706,7 @@ function buildBoardChatPanel(room){
         <span class="mini-note" style="margin:0;">คุยได้ระหว่างเล่น</span>
       </div>
       <div class="chat-window" id="bg-chat-window">
-        ${messages.length===0
-          ? `<div class="msg sys">ยังไม่มีข้อความในห้องนี้</div>`
-          : messages.map(m=>{
-              if(m.senderId==='sys') return `<div class="msg sys">${escapeHtml(m.text)}</div>`;
-              const isMe = m.senderId===ME_ID;
-              const name = m.senderName || (isMe ? (ME_NAME||'คุณ') : 'เพื่อน');
-              return `<div class="msg ${isMe?'me':'them'}"><div style="font-size:11px;opacity:.8;margin-bottom:4px;">${escapeHtml(name)}</div>${escapeHtml(m.text)}</div>`;
-            }).join('')
-        }
+        ${buildBoardChatMessages(room)}
       </div>
       <div class="row">
         <input class="input" id="bg-chat-input" placeholder="พิมพ์ข้อความในห้อง…"/>
@@ -724,7 +734,7 @@ async function renderBoardRoom(){
   return buildBoardRoomShell(room);
 }
 async function refreshBoardRoom(forceScroll){
-  if(view!=='boardroom') return;
+  if(view !== 'boardroom') return;
   const room = await fGet('rooms/'+currentRoomCode);
   if(!room){ goto('boardgame'); return; }
 
@@ -733,22 +743,49 @@ const title = document.getElementById('boardroom-title');
   const scoreStrip = document.getElementById('board-score-strip');
   const statusPanel = document.getElementById('board-status-panel');
   const chatPanel = document.getElementById('bg-chat-panel');
+  const chatWindow = document.getElementById('bg-chat-window');
   const grid = document.getElementById('board-grid');
   const note = document.getElementById('board-note');
+
+const activeChatInput = document.getElementById('bg-chat-input');
+  const wasFocused = activeChatInput && document.activeElement === activeChatInput;
+  const draft = activeChatInput ? activeChatInput.value : '';
 
 if(title) title.innerHTML = `🎲 ${room.roomName ? escapeHtml(room.roomName) : ('ห้อง '+escapeHtml(room.code || currentRoomCode || ''))}`;
   if(winnerPanel) winnerPanel.innerHTML = buildBoardWinnerPanel(room);
   if(scoreStrip) scoreStrip.innerHTML = buildBoardScoreStrip(room);
   if(statusPanel) statusPanel.innerHTML = buildBoardStatusPanel(room);
-  if(chatPanel) chatPanel.innerHTML = buildBoardChatPanel(room);
   if(grid) grid.innerHTML = buildBoardGrid(room);
-  if(note){
-    note.innerHTML = room.status==='playing' ? 'แตะการ์ดเพื่อเปิด จับคู่สัญลักษณ์ให้ตรงกันเพื่อได้คะแนน' : '';
-    note.style.display = room.status==='playing' ? '' : 'none';
+
+if(chatPanel){
+    if(chatWindow){
+      chatWindow.innerHTML = buildBoardChatMessages(room);
+    } else {
+      chatPanel.innerHTML = buildBoardChatPanel(room);
+    }
+  }
+
+if(note){
+    note.innerHTML = room.status === 'playing'
+      ? 'แตะการ์ดเพื่อเปิด จับคู่สัญลักษณ์ให้ตรงกันเพื่อได้คะแนน'
+      : '';
+    note.style.display = room.status === 'playing' ? '' : 'none';
   }
 
 bindEvents();
-  if(forceScroll) scrollToBottom('bg-chat-window');
+
+if(wasFocused){
+    const input = document.getElementById('bg-chat-input');
+    if(input){
+      input.value = draft;
+      input.focus({ preventScroll: true });
+      if(input.setSelectionRange){
+        input.setSelectionRange(draft.length, draft.length);
+      }
+    }
+  }
+
+if(forceScroll) scrollToBottom('bg-chat-window');
 }
 
 async function bgStart(){
@@ -759,20 +796,20 @@ async function bgStart(){
 }
 async function bgFlip(idx){
   const room = await fGet('rooms/'+currentRoomCode);
-  if(!room || room.status!=='playing') return;
+  if(!room || room.status !== 'playing') return;
   const cards = room.cards || [];
   const flipped = room.flipped || {};
   const card = cards[idx];
   if(!card || card.matchedBy) return;
   if(flipped[idx]) return;
-  if(Object.keys(flipped).length>=2) return;
+  if(Object.keys(flipped).length >= 2) return;
 
 flipped[idx] = true;
   await fSet('rooms/'+currentRoomCode+'/flipped', flipped);
   refreshBoardRoom(true);
 
 const openIdx = Object.keys(flipped).map(Number);
-  if(openIdx.length===2){
+  if(openIdx.length === 2){
     const [a,b] = openIdx;
     if(cards[a].value === cards[b].value){
       await fSet('rooms/'+currentRoomCode+'/cards/'+a+'/matchedBy', ME_ID);
@@ -792,10 +829,10 @@ const openIdx = Object.keys(flipped).map(Number);
         if(!room2) return;
         const flipped2 = room2.flipped || {};
         const keys2 = Object.keys(flipped2).map(Number);
-        if(keys2.length===2 && keys2.includes(a) && keys2.includes(b)){
+        if(keys2.length === 2 && keys2.includes(a) && keys2.includes(b)){
           await fSet('rooms/'+currentRoomCode+'/flipped', {});
         }
-        if(view==='boardroom') refreshBoardRoom(true);
+        if(view === 'boardroom') refreshBoardRoom(true);
       }, 1100);
     }
   }
@@ -824,12 +861,12 @@ async function bgLeave(){
     if(room){
       await fDel('rooms/'+currentRoomCode+'/players/'+ME_ID);
       const remaining = await fGet('rooms/'+currentRoomCode+'/players');
-      if(!remaining || Object.keys(remaining).length===0){
+      if(!remaining || Object.keys(remaining).length === 0){
         await fDel('rooms/'+currentRoomCode);
       }
     }
   }
-  currentRoomCode=null;
+  currentRoomCode = null;
   goto('boardgame');
 }
 
@@ -837,14 +874,16 @@ async function bgLeave(){
 async function renderChatEntry(){
   const w = await fGet('chatwait/'+ME_ID);
   if(w){
-    if(w.status==='matched' && w.roomCode){
+    if(w.status === 'matched' && w.roomCode){
       await fDel('chatwait/'+ME_ID);
       currentChatCode = w.roomCode;
-      goto('chatroom');
-      return renderChatRoom();
+      view = 'chatroom';
+      lastError = null;
+      if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+      return await renderChatRoom();
     }
-    if(w.status==='waiting'){
-      if(!pollTimer){ pollTimer=setInterval(()=>{ if(view==='chat') render(); }, 1600); }
+    if(w.status === 'waiting'){
+      if(!pollTimer){ pollTimer = setInterval(()=>{ if(view === 'chat') render(); }, 1600); }
       return `
       <div class="view">
         <button class="back-btn" data-action="chat-cancel">← ยกเลิกและกลับหน้าหลัก</button>
@@ -878,11 +917,11 @@ async function chatFind(){
   ME_NAME = nick; lSet('nickname', nick);
 
 const allWaiting = await fGet('chatwait') || {};
-  let partnerId=null, partnerData=null;
+  let partnerId = null, partnerData = null;
   for(const id in allWaiting){
-    if(id===ME_ID) continue;
+    if(id === ME_ID) continue;
     const w = allWaiting[id];
-    if(w && w.status==='waiting'){ partnerId=id; partnerData=w; break; }
+    if(w && w.status === 'waiting'){ partnerId = id; partnerData = w; break; }
   }
 
 if(partnerData){
@@ -912,7 +951,7 @@ function getChatMessages(room){
 }
 function buildChatRoomShell(room){
   const players = room.players || {};
-  const partnerId = Object.keys(players).find(id=>id!==ME_ID);
+  const partnerId = Object.keys(players).find(id=>id !== ME_ID);
   const partnerName = partnerId ? players[partnerId].name : 'เพื่อน';
   const messages = getChatMessages(room);
 
@@ -922,7 +961,7 @@ return `
     <h2 class="view-title" id="chatroom-title">💬 คุยกับ ${escapeHtml(partnerName)}</h2>
     <div class="chat-window" id="chat-window">
       ${messages.map(m=>{
-        if(m.sender==='sys') return `<div class="msg sys">${escapeHtml(m.text)}</div>`;
+        if(m.sender === 'sys') return `<div class="msg sys">${escapeHtml(m.text)}</div>`;
         return `<div class="msg ${m.sender===ME_ID?'me':'them'}">${escapeHtml(m.text)}</div>`;
       }).join('')}
     </div>
@@ -938,7 +977,7 @@ async function renderChatRoom(){
   return buildChatRoomShell(room);
 }
 async function refreshChatRoom(forceScroll){
-  if(view!=='chatroom') return;
+  if(view !== 'chatroom') return;
   const room = await fGet('chatrooms/'+currentChatCode);
   if(!room){ goto('home'); return; }
 
@@ -952,7 +991,7 @@ const title = document.getElementById('chatroom-title');
   if(title) title.innerHTML = `💬 คุยกับ ${escapeHtml(partnerName)}`;
   if(windowEl){
     windowEl.innerHTML = messages.map(m=>{
-      if(m.sender==='sys') return `<div class="msg sys">${escapeHtml(m.text)}</div>`;
+      if(m.sender === 'sys') return `<div class="msg sys">${escapeHtml(m.text)}</div>`;
       return `<div class="msg ${m.sender===ME_ID?'me':'them'}">${escapeHtml(m.text)}</div>`;
     }).join('');
   }
@@ -980,7 +1019,7 @@ async function chatLeave(){
       }
     }
   }
-  currentChatCode=null;
+  currentChatCode = null;
   goto('home');
 }
 
@@ -989,9 +1028,29 @@ function ventCaptureDraft(){
   const ta = document.getElementById('vent-text');
   if(ta) ventDraft = ta.value;
 }
+function stopVentPublicFeedListener(){
+  if(!ventPublicListenerStarted) return;
+  try{
+    db.ref('vent_public_posts').off();
+  }catch(e){}
+  ventPublicListenerStarted = false;
+}
+function startVentPublicFeedListener(){
+  if(ventPublicListenerStarted) return;
+  ventPublicListenerStarted = true;
+  db.ref('vent_public_posts').on('value', snap => {
+    ventPublicPostsCache = normalizeVentPublicPosts(snap.val() || {});
+    if(view === 'vent' && ventView === 'public'){
+      render();
+    }
+  });
+}
 function ventSetView(mode){
   ventCaptureDraft();
   ventView = mode;
+  if(mode !== 'public'){
+    stopVentPublicFeedListener();
+  }
   render();
 }
 function ventSetVisibility(mode){
@@ -1048,9 +1107,18 @@ function renderPublicCommentList(comments){
     </div>
   `;
 }
-async function getPublicPosts(){
+function normalizeVentPublicPosts(raw){
+  return Object.keys(raw || {})
+    .map(id => ({ id, ...raw[id] }))
+    .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+}
+async function loadVentPublicPostsCache(){
   const raw = await fGet('vent_public_posts') || {};
-  return Object.keys(raw).map(id=>({id, ...raw[id]})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  ventPublicPostsCache = normalizeVentPublicPosts(raw);
+  return ventPublicPostsCache;
+}
+async function getPublicPosts(){
+  return await loadVentPublicPostsCache();
 }
 function renderPublicPost(post){
   const comments = Object.values(post.comments || {}).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
@@ -1077,14 +1145,20 @@ ${renderPublicCommentList(comments)}
   `;
 }
 async function renderVentPublicFeed(){
-  const posts = await getPublicPosts();
+  startVentPublicFeedListener();
+  if(ventPublicPostsCache.length===0){
+    await loadVentPublicPostsCache();
+  }
+  const posts = ventPublicPostsCache;
   if(posts.length===0) return `<p class="empty-note">ยังไม่มีข้อความสาธารณะ</p>`;
   return posts.map(renderPublicPost).join('');
 }
 async function renderVent(){
   const raw = lGet('vent_entries');
   let entries = [];
-  if(raw){ try{ entries=JSON.parse(raw); }catch(e){ entries=[]; } }
+  if(raw){
+    try{ entries=JSON.parse(raw); }catch(e){ entries=[]; }
+  }
   entries = entries.slice().reverse();
 
 const publicFeed = ventView==='public' ? await renderVentPublicFeed() : '';
@@ -1117,7 +1191,9 @@ async function ventSave(){
 
 const raw = lGet('vent_entries');
   let entries = [];
-  if(raw){ try{ entries=JSON.parse(raw); }catch(e){ entries=[]; } }
+  if(raw){
+    try{ entries=JSON.parse(raw); }catch(e){ entries=[]; }
+  }
 
 const entry = {
     id: uid(),
@@ -1128,16 +1204,26 @@ const entry = {
   entries.push(entry);
   lSet('vent_entries', JSON.stringify(entries));
 
-if(ventVisibility==='public'){
+if(ventVisibility === 'public'){
     const authorName = ME_NAME || 'เพื่อนนิรนาม';
-    await fPushReturnKey('vent_public_posts', {
+    const payload = {
       authorId: ME_ID,
       authorName,
       text,
       createdAt: Date.now(),
       comments: {}
-    });
+    };
+
+const key = await fPushReturnKey('vent_public_posts', payload);
+    if(!key){
+      lastError = 'บันทึกข้อความสาธารณะไม่สำเร็จ';
+      render();
+      return;
+    }
+
+ventPublicPostsCache = [{ id:key, ...payload }, ...ventPublicPostsCache];
     ventView = 'public';
+    startVentPublicFeedListener();
   } else {
     ventView = 'history';
   }
@@ -1159,7 +1245,7 @@ const authorName = ME_NAME || 'เพื่อนนิรนาม';
     createdAt: Date.now()
   });
 
-if(input) input.value='';
+if(input) input.value = '';
   render();
 }
 
@@ -1168,31 +1254,31 @@ function bindEvents(){
   document.querySelectorAll('[data-action]').forEach(el=>{
     el.onclick = async () => {
       const action = el.getAttribute('data-action');
-      if(action==='ext') window.open(el.getAttribute('data-url'), '_blank');
-      else if(action==='nav') goto(el.getAttribute('data-view'));
-      else if(action==='bg-quickmatch') bgQuickMatch();
-      else if(action==='bg-createroom') bgCreateRoom();
-      else if(action==='bg-joincode') bgJoinCode();
-      else if(action==='bg-start') bgStart();
-      else if(action==='bg-flip') bgFlip(parseInt(el.getAttribute('data-idx')));
-      else if(action==='bg-leave') bgLeave();
-      else if(action==='bg-chat-send') bgChatSend();
-      else if(action==='chat-find') chatFind();
-      else if(action==='chat-cancel') chatCancel();
-      else if(action==='chat-send') chatSend();
-      else if(action==='chat-leave') chatLeave();
-      else if(action==='vent-save') ventSave();
-      else if(action==='vent-set-view') ventSetView(el.getAttribute('data-view'));
-      else if(action==='vent-set-visibility') ventSetVisibility(el.getAttribute('data-visibility'));
-      else if(action==='vent-comment-send') ventAddComment(el.getAttribute('data-post-id'));
+      if(action === 'ext') window.open(el.getAttribute('data-url'), '_blank');
+      else if(action === 'nav') goto(el.getAttribute('data-view'));
+      else if(action === 'bg-quickmatch') bgQuickMatch();
+      else if(action === 'bg-createroom') bgCreateRoom();
+      else if(action === 'bg-joincode') bgJoinCode();
+      else if(action === 'bg-start') bgStart();
+      else if(action === 'bg-flip') bgFlip(parseInt(el.getAttribute('data-idx')));
+      else if(action === 'bg-leave') bgLeave();
+      else if(action === 'bg-chat-send') bgChatSend();
+      else if(action === 'chat-find') chatFind();
+      else if(action === 'chat-cancel') chatCancel();
+      else if(action === 'chat-send') chatSend();
+      else if(action === 'chat-leave') chatLeave();
+      else if(action === 'vent-save') ventSave();
+      else if(action === 'vent-set-view') ventSetView(el.getAttribute('data-view'));
+      else if(action === 'vent-set-visibility') ventSetVisibility(el.getAttribute('data-visibility'));
+      else if(action === 'vent-comment-send') ventAddComment(el.getAttribute('data-post-id'));
     };
   });
 
 const chatInput = document.getElementById('chat-msg-input');
-  if(chatInput) chatInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') chatSend(); });
+  if(chatInput) chatInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') chatSend(); });
 
 const bgChatInput = document.getElementById('bg-chat-input');
-  if(bgChatInput) bgChatInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') bgChatSend(); });
+  if(bgChatInput) bgChatInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') bgChatSend(); });
 }
 
 /* init */
